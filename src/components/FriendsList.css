@@ -1,0 +1,185 @@
+.friends-list {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 50vh;
+}
+
+.friends-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.friends-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #999;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.friends-actions {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.add-button {
+  width: 100%;
+  padding: 0.5rem;
+  background: #f0f0f0;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #667eea;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.add-button:hover {
+  background: #e8e8e8;
+}
+
+.add-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.add-form input {
+  flex: 1;
+  padding: 0.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.add-form input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.add-form button {
+  padding: 0.5rem 0.75rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.add-form button:disabled {
+  opacity: 0.6;
+}
+
+.add-form button.cancel {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.error {
+  background: #fee;
+  color: #c00;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+}
+
+.success {
+  background: #efe;
+  color: #060;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+}
+
+.friends-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.empty {
+  text-align: center;
+  color: #888;
+  padding: 2rem 1rem;
+  font-size: 0.875rem;
+}
+
+.friends-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.friend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.friend-item:last-child {
+  border-bottom: none;
+}
+
+.friend-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.friend-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.friend-avatar.active {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: white;
+}
+
+.friend-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.friend-username {
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.friend-status {
+  font-size: 0.75rem;
+  color: #22c55e;
+  font-weight: 500;
+}
+
+.remove-button {
+  background: none;
+  border: none;
+  color: #ccc;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+}
+
+.remove-button:hover {
+  color: #f44;
+}

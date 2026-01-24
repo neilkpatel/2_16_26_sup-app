@@ -1,0 +1,159 @@
+.bar-suggestions {
+  padding: 0.5rem 0;
+}
+
+.bar-suggestions h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.bars-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bar-skeleton {
+  height: 60px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.bars-error,
+.bars-empty {
+  text-align: center;
+  color: #888;
+  padding: 1rem;
+  font-size: 0.875rem;
+}
+
+.bars-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.bar-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f9f9f9;
+  border-radius: 0.5rem;
+  transition: background 0.2s;
+}
+
+.bar-card:hover {
+  background: #f0f0f0;
+}
+
+.bar-rank {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.bar-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bar-name {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-address {
+  margin: 0.125rem 0 0;
+  font-size: 0.75rem;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-meta {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.bar-rating {
+  color: #666;
+}
+
+.bar-rating .star {
+  color: #f59e0b;
+}
+
+.rating-count {
+  color: #999;
+  margin-left: 0.125rem;
+}
+
+.bar-price {
+  color: #22c55e;
+  font-weight: 500;
+}
+
+.bar-open {
+  font-weight: 500;
+}
+
+.bar-open.open {
+  color: #22c55e;
+}
+
+.bar-open.closed {
+  color: #ef4444;
+}
+
+.bar-directions {
+  padding: 0.4rem 0.75rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+
+.bar-directions:hover {
+  opacity: 0.9;
+}
+
+/* Mobile adjustments */
+@media (max-width: 400px) {
+  .bar-directions {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}

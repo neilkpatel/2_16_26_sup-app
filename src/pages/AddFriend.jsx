@@ -110,11 +110,11 @@ export function AddFriend() {
             {isSelf ? (
               <p className="info-message">This is your profile!</p>
             ) : isAlreadyFriends ? (
-              <p className="success-message">You're already friends!</p>
+              <p className="success-message">Already in your squad!</p>
             ) : success ? (
               <>
                 <p className="success-message">
-                  You and @{friendProfile.username} are now friends!
+                  @{friendProfile.username} joined your squad!
                 </p>
                 <button onClick={() => navigate('/')} className="primary-button">
                   Open Sup
@@ -124,8 +124,8 @@ export function AddFriend() {
               <>
                 <p className="invite-text">
                   {user
-                    ? `Add @${friendProfile.username} as a friend?`
-                    : `Sign up to connect with @${friendProfile.username}`}
+                    ? `Add @${friendProfile.username} to your squad?`
+                    : `Sign up to join @${friendProfile.username}'s squad`}
                 </p>
 
                 {error && <div className="error-message">{error}</div>}
@@ -138,8 +138,8 @@ export function AddFriend() {
                   {adding
                     ? 'Adding...'
                     : user
-                    ? 'Add Friend'
-                    : 'Sign Up & Add Friend'}
+                    ? 'Join Squad'
+                    : 'Sign Up & Join Squad'}
                 </button>
 
                 {!user && (

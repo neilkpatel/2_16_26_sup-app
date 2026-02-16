@@ -1,7 +1,7 @@
 {
   "name": "Sup - See who's free",
   "short_name": "Sup",
-  "description": "Signal you're free and see friends on a map",
+  "description": "See who's free to hang",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#667eea",

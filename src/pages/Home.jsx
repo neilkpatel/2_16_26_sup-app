@@ -4,11 +4,14 @@ import { useAuth } from '../hooks/useAuth'
 import { useFriends } from '../hooks/useFriends'
 import { useSupStatus } from '../hooks/useSupStatus'
 import { useLocation } from '../hooks/useLocation'
+import { usePushNotifications } from '../hooks/usePushNotifications'
 import Map from '../components/Map'
 import SupButton from '../components/SupButton'
 import BarSuggestions from '../components/BarSuggestions'
 import FriendsList from '../components/FriendsList'
+import InstallPrompt from '../components/InstallPrompt'
 import { calculateMidpoint } from '../lib/geo'
+import { supabase } from '../lib/supabase'
 import './Home.css'
 
 export function Home() {
@@ -31,6 +34,13 @@ export function Home() {
     loading: locationLoading,
     getCurrentLocation
   } = useLocation()
+
+  const {
+    isSupported: pushSupported,
+    isSubscribed: pushSubscribed,
+    permission: pushPermission,
+    subscribe: pushSubscribe
+  } = usePushNotifications(user?.id)
 
   const [showFriends, setShowFriends] = useState(false)
   const [error, setError] = useState('')
@@ -76,6 +86,16 @@ export function Home() {
           loc = await getCurrentLocation()
         }
         await goSup(loc)
+
+        // After going Sup: prompt for push if not subscribed, then notify squad
+        if (pushSupported && !pushSubscribed) {
+          pushSubscribe()
+        }
+
+        // Fire-and-forget: notify squad via edge function
+        supabase.functions.invoke('send-push', {
+          body: { userId: user.id }
+        })
       } catch (err) {
         setError(err.message)
       }
@@ -100,7 +120,7 @@ export function Home() {
             className="nav-button"
             onClick={() => setShowFriends(!showFriends)}
           >
-            Friends ({friends.length})
+            Squad ({friends.length})
           </button>
           <Link to="/profile" className="nav-button">
             @{profile?.username || 'Profile'}
@@ -109,6 +129,15 @@ export function Home() {
       </header>
 
       <main className="home-main">
+        {pushSupported && pushPermission === 'default' && !pushSubscribed && (
+          <div className="notification-banner">
+            <span>Enable notifications to know when your squad is free</span>
+            <button onClick={pushSubscribe} className="notification-banner-btn">Enable</button>
+          </div>
+        )}
+
+        <InstallPrompt />
+
         {showFriends && (
           <div className="friends-panel">
             <FriendsList
@@ -149,8 +178,8 @@ export function Home() {
           {isSupActive && (
             <p className="sup-status">
               You're Sup! {activeFriends.length > 0
-                ? `${activeFriends.length} friend${activeFriends.length === 1 ? '' : 's'} also free`
-                : 'Waiting for friends...'}
+                ? `${activeFriends.length} in your squad also free`
+                : 'Waiting for your squad...'}
             </p>
           )}
         </div>

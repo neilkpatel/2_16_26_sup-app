@@ -1,127 +1,104 @@
--- Sup App Database Schema
+-- ========================================
+-- SUP APP - Complete Database Schema
 -- Run this in Supabase SQL Editor
+-- ========================================
 
--- Enable PostGIS for location support (if not already enabled)
-create extension if not exists postgis;
+-- Drop existing tables (cascade drops policies too)
+drop table if exists public.sup_sessions cascade;
+drop table if exists public.friendships cascade;
+drop table if exists public.users cascade;
 
--- Users table
-create table if not exists public.users (
+-- Delete any orphaned auth users
+delete from auth.users;
+
+-- ========================================
+-- CREATE TABLES
+-- ========================================
+
+create table public.users (
   id uuid primary key references auth.users(id) on delete cascade,
   phone text unique,
   username text unique not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-
+  created_at timestamp with time zone default now() not null,
   constraint username_length check (char_length(username) >= 3),
   constraint username_format check (username ~ '^[a-z0-9_]+$')
 );
 
--- Friendships table (bidirectional)
-create table if not exists public.friendships (
+create table public.friendships (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references public.users(id) on delete cascade not null,
   friend_id uuid references public.users(id) on delete cascade not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-
-  -- Prevent self-friendships
+  created_at timestamp with time zone default now() not null,
   constraint no_self_friendship check (user_id != friend_id),
-  -- Prevent duplicate friendships (in either direction)
   constraint unique_friendship unique (user_id, friend_id)
 );
 
--- Active "Sup" sessions table
-create table if not exists public.sup_sessions (
+create table public.sup_sessions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references public.users(id) on delete cascade not null,
   location geography(point, 4326),
-  started_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  expires_at timestamp with time zone not null,
-
-  constraint valid_expiry check (expires_at > started_at)
+  started_at timestamp with time zone default now() not null,
+  expires_at timestamp with time zone not null
 );
 
--- Indexes for better query performance
-create index if not exists idx_friendships_user_id on public.friendships(user_id);
-create index if not exists idx_friendships_friend_id on public.friendships(friend_id);
-create index if not exists idx_sup_sessions_user_id on public.sup_sessions(user_id);
-create index if not exists idx_sup_sessions_expires_at on public.sup_sessions(expires_at);
-create index if not exists idx_users_username on public.users(username);
+create table public.push_subscriptions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.users(id) on delete cascade not null,
+  subscription jsonb not null,
+  created_at timestamp with time zone default now() not null,
+  constraint unique_user_subscription unique (user_id, subscription)
+);
 
--- Row Level Security (RLS) Policies
+-- ========================================
+-- GRANT PERMISSIONS (required for access)
+-- ========================================
 
--- Enable RLS on all tables
+grant usage on schema public to anon, authenticated;
+grant all on public.users to anon, authenticated;
+grant all on public.friendships to authenticated;
+grant all on public.sup_sessions to authenticated;
+grant all on public.push_subscriptions to authenticated;
+
+-- ========================================
+-- ENABLE RLS
+-- ========================================
+
 alter table public.users enable row level security;
 alter table public.friendships enable row level security;
 alter table public.sup_sessions enable row level security;
+alter table public.push_subscriptions enable row level security;
 
--- Users policies
-create policy "Users can view their own profile"
-  on public.users for select
-  using (auth.uid() = id);
+-- ========================================
+-- RLS POLICIES
+-- ========================================
 
-create policy "Users can view other users by username"
-  on public.users for select
-  using (true);
+-- Users: anyone can read, anyone can insert (for signup), owner can update
+create policy "users_select" on public.users for select using (true);
+create policy "users_insert" on public.users for insert with check (true);
+create policy "users_update" on public.users for update using (auth.uid() = id);
 
-create policy "Users can insert their own profile"
-  on public.users for insert
-  with check (auth.uid() = id);
+-- Friendships: only authenticated users, can see/manage own
+create policy "friendships_select" on public.friendships for select using (auth.uid() in (user_id, friend_id));
+create policy "friendships_insert" on public.friendships for insert with check (auth.uid() = user_id);
+create policy "friendships_delete" on public.friendships for delete using (auth.uid() in (user_id, friend_id));
 
-create policy "Users can update their own profile"
-  on public.users for update
-  using (auth.uid() = id);
+-- Sup sessions: owner can manage, friends can view
+create policy "sessions_select_own" on public.sup_sessions for select using (auth.uid() = user_id);
+create policy "sessions_select_friends" on public.sup_sessions for select using (
+  exists (select 1 from public.friendships f where auth.uid() in (f.user_id, f.friend_id) and sup_sessions.user_id in (f.user_id, f.friend_id))
+);
+create policy "sessions_insert" on public.sup_sessions for insert with check (auth.uid() = user_id);
+create policy "sessions_update" on public.sup_sessions for update using (auth.uid() = user_id);
+create policy "sessions_delete" on public.sup_sessions for delete using (auth.uid() = user_id);
 
--- Friendships policies
-create policy "Users can view their friendships"
-  on public.friendships for select
-  using (auth.uid() = user_id or auth.uid() = friend_id);
+-- Push subscriptions: owner can manage own
+create policy "push_sub_select" on public.push_subscriptions for select using (auth.uid() = user_id);
+create policy "push_sub_insert" on public.push_subscriptions for insert with check (auth.uid() = user_id);
+create policy "push_sub_delete" on public.push_subscriptions for delete using (auth.uid() = user_id);
 
-create policy "Users can create friendships"
-  on public.friendships for insert
-  with check (auth.uid() = user_id);
+-- ========================================
+-- ENABLE REALTIME
+-- ========================================
 
-create policy "Users can delete their friendships"
-  on public.friendships for delete
-  using (auth.uid() = user_id or auth.uid() = friend_id);
-
--- Sup sessions policies
-create policy "Users can view their own sessions"
-  on public.sup_sessions for select
-  using (auth.uid() = user_id);
-
-create policy "Users can view friends' active sessions"
-  on public.sup_sessions for select
-  using (
-    exists (
-      select 1 from public.friendships
-      where (user_id = auth.uid() and friend_id = sup_sessions.user_id)
-         or (friend_id = auth.uid() and user_id = sup_sessions.user_id)
-    )
-  );
-
-create policy "Users can create their own sessions"
-  on public.sup_sessions for insert
-  with check (auth.uid() = user_id);
-
-create policy "Users can update their own sessions"
-  on public.sup_sessions for update
-  using (auth.uid() = user_id);
-
-create policy "Users can delete their own sessions"
-  on public.sup_sessions for delete
-  using (auth.uid() = user_id);
-
--- Enable realtime for tables
 alter publication supabase_realtime add table public.friendships;
 alter publication supabase_realtime add table public.sup_sessions;
-
--- Function to clean up expired sessions (can be called by a cron job)
-create or replace function public.cleanup_expired_sessions()
-returns void
-language plpgsql
-security definer
-as $$
-begin
-  delete from public.sup_sessions
-  where expires_at < now();
-end;
-$$;

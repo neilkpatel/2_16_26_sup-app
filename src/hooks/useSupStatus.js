@@ -179,8 +179,9 @@ export function useSupStatus(userId, friendIds = []) {
 
     const allUserIds = [userId, ...friendIds]
 
+    const channelName = `sup-sessions-${userId}`
     const subscription = supabase
-      .channel('sup-sessions-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {

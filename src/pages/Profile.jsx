@@ -141,8 +141,8 @@ export function Profile() {
         </section>
 
         <section className="profile-section">
-          <h2>Your Friend Link</h2>
-          <p className="hint">Share this link to add friends</p>
+          <h2>Your Squad Link</h2>
+          <p className="hint">Share this link to add people to your squad</p>
           <div className="share-link">
             <input
               type="text"
@@ -157,8 +157,8 @@ export function Profile() {
         </section>
 
         <section className="profile-section">
-          <h2>Friends</h2>
-          <p className="friend-count">{friends.length} friends</p>
+          <h2>Squad</h2>
+          <p className="friend-count">{friends.length} in your squad</p>
         </section>
 
         <section className="profile-section">

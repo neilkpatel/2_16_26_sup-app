@@ -4,45 +4,56 @@ import { useFriends } from '../hooks/useFriends'
 import './FriendsList.css'
 
 export function FriendsList({ friends, activeFriends = [], onClose }) {
-  const { user } = useAuth()
-  const { addFriend, removeFriend } = useFriends(user?.id)
+  const { user, profile } = useAuth()
+  const { removeFriend } = useFriends(user?.id)
 
-  const [showAdd, setShowAdd] = useState(false)
-  const [username, setUsername] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+
+  const shareLink = `${window.location.origin}/add/${profile?.username}`
 
   // Check if a friend is currently Sup
   const isActive = (friendId) => {
     return activeFriends.some(s => s.user_id === friendId)
   }
 
-  const handleAdd = async (e) => {
-    e.preventDefault()
-    if (!username.trim()) return
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Join my squad on Sup!',
+          text: `Join my squad on Sup so we can hang out!`,
+          url: shareLink
+        })
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          handleCopy()
+        }
+      }
+    } else {
+      handleCopy()
+    }
+  }
 
-    setLoading(true)
-    setError('')
-    setSuccess('')
-
+  const handleCopy = async () => {
     try {
-      const friend = await addFriend(username.trim())
-      setSuccess(`Added @${friend.username}!`)
-      setUsername('')
-      setTimeout(() => {
-        setSuccess('')
-        setShowAdd(false)
-      }, 2000)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+      await navigator.clipboard.writeText(shareLink)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      const input = document.createElement('input')
+      input.value = shareLink
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
     }
   }
 
   const handleRemove = async (friendshipId, friendUsername) => {
-    if (!confirm(`Remove @${friendUsername} from friends?`)) return
+    if (!confirm(`Remove @${friendUsername} from your squad?`)) return
 
     try {
       await removeFriend(friendshipId)
@@ -54,48 +65,21 @@ export function FriendsList({ friends, activeFriends = [], onClose }) {
   return (
     <div className="friends-list">
       <div className="friends-header">
-        <h2>Friends</h2>
+        <h2>Squad</h2>
         <button onClick={onClose} className="close-button">&times;</button>
       </div>
 
       <div className="friends-actions">
-        {showAdd ? (
-          <form onSubmit={handleAdd} className="add-form">
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
-              autoFocus
-            />
-            <button type="submit" disabled={loading}>
-              {loading ? '...' : 'Add'}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowAdd(false)
-                setError('')
-                setSuccess('')
-              }}
-              className="cancel"
-            >
-              Cancel
-            </button>
-          </form>
-        ) : (
-          <button onClick={() => setShowAdd(true)} className="add-button">
-            + Add Friend
-          </button>
-        )}
+        <button onClick={handleShare} className="add-button">
+          {copied ? 'Link copied!' : 'Share your squad link'}
+        </button>
       </div>
 
       {error && <div className="error">{error}</div>}
-      {success && <div className="success">{success}</div>}
 
       <div className="friends-scroll">
         {friends.length === 0 ? (
-          <p className="empty">No friends yet. Add some!</p>
+          <p className="empty">No one in your squad yet</p>
         ) : (
           <ul className="friends-items">
             {friends.map(friend => (
@@ -114,7 +98,7 @@ export function FriendsList({ friends, activeFriends = [], onClose }) {
                 <button
                   onClick={() => handleRemove(friend.friendshipId, friend.username)}
                   className="remove-button"
-                  title="Remove friend"
+                  title="Remove from squad"
                 >
                   &times;
                 </button>

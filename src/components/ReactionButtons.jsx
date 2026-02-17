@@ -6,7 +6,13 @@ const REACTIONS = [
   { key: 'maybe_later', label: 'maybe later', color: '#f59e0b' }
 ]
 
-export function ReactionButtons({ sessionId, currentReaction, onReact }) {
+export function ReactionButtons({ sessionId, sessionIds, currentReaction, onReact }) {
+  const ids = sessionIds || (sessionId ? [sessionId] : [])
+
+  const handleReact = (reaction) => {
+    ids.forEach(id => onReact(id, reaction))
+  }
+
   return (
     <div className="reaction-buttons">
       {REACTIONS.map(({ key, label, color }) => (
@@ -14,7 +20,7 @@ export function ReactionButtons({ sessionId, currentReaction, onReact }) {
           key={key}
           className={`reaction-pill ${currentReaction === key ? 'reaction-pill-active' : ''}`}
           style={currentReaction === key ? { background: color, borderColor: color } : {}}
-          onClick={() => onReact(sessionId, key)}
+          onClick={() => handleReact(key)}
         >
           {label}
         </button>

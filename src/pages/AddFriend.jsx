@@ -16,6 +16,12 @@ export function AddFriend() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
+  // Show iOS install steps if on iOS and not in standalone PWA
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || navigator.standalone === true
+  const showInstallSteps = isIOS && !isStandalone
+
   // Check if already friends
   const isAlreadyFriends = friends.some(
     f => f.username?.toLowerCase() === username?.toLowerCase()
@@ -130,6 +136,16 @@ export function AddFriend() {
                 <button onClick={() => navigate('/')} className="primary-button">
                   Open Sup
                 </button>
+                {showInstallSteps && (
+                  <div className="install-steps">
+                    <p className="install-steps-title">Add to your home screen for push notifications:</p>
+                    <ol className="install-steps-list">
+                      <li>Tap the <strong>Share</strong> button <span className="install-icon">⬆</span></li>
+                      <li>Tap <strong>Add to Home Screen</strong></li>
+                      <li>Open Sup from your home screen</li>
+                    </ol>
+                  </div>
+                )}
               </>
             ) : (
               <>

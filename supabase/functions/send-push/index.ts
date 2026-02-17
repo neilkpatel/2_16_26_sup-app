@@ -56,11 +56,28 @@ serve(async (req) => {
       })
     }
 
-    // Get push subscriptions for squad members
+    // Filter out squad members who already have an active Sup session
+    const { data: activeSessions } = await supabase
+      .from("sup_sessions")
+      .select("user_id")
+      .in("user_id", squadIds)
+      .gt("expires_at", new Date().toISOString())
+
+    const alreadySupIds = new Set((activeSessions || []).map((s) => s.user_id))
+    const notifyIds = squadIds.filter((id) => !alreadySupIds.has(id))
+
+    if (notifyIds.length === 0) {
+      return new Response(
+        JSON.stringify({ sent: 0, skipped: squadIds.length }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      )
+    }
+
+    // Get push subscriptions for squad members who aren't already Sup'd
     const { data: subscriptions } = await supabase
       .from("push_subscriptions")
       .select("id, user_id, subscription")
-      .in("user_id", squadIds)
+      .in("user_id", notifyIds)
 
     if (!subscriptions || subscriptions.length === 0) {
       return new Response(JSON.stringify({ sent: 0 }), {
@@ -107,7 +124,7 @@ serve(async (req) => {
         .in("id", expiredIds)
     }
 
-    return new Response(JSON.stringify({ sent, expired: expiredIds.length }), {
+    return new Response(JSON.stringify({ sent, expired: expiredIds.length, skipped: alreadySupIds.size }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     })
   } catch (err) {

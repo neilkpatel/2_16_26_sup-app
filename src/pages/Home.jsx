@@ -14,6 +14,7 @@ import InstallPrompt from '../components/InstallPrompt'
 import SquadActivity from '../components/SquadActivity'
 import ReactionButtons from '../components/ReactionButtons'
 import ReactionsSummary from '../components/ReactionsSummary'
+import EmptySquad from '../components/EmptySquad'
 import { calculateMidpoint } from '../lib/geo'
 import { supabase } from '../lib/supabase'
 import './Home.css'
@@ -244,6 +245,14 @@ export function Home() {
     return getReactionsForSession(mySession.id)
   }, [mySession, getReactionsForSession])
 
+  // Consolidated reaction — picks first non-null reaction across active friends
+  const consolidatedReaction = useMemo(() => {
+    for (const friend of activeFriends) {
+      if (myReactions[friend.id]) return myReactions[friend.id]
+    }
+    return null
+  }, [activeFriends, myReactions])
+
   return (
     <div className="home-container">
       <header className="home-header">
@@ -265,6 +274,14 @@ export function Home() {
       </header>
 
       <main className="home-main">
+        {(error || locationError) && (
+          <div className="error-toast">{error || locationError}</div>
+        )}
+
+        {joinFlash && (
+          <div className="join-flash">You're in!</div>
+        )}
+
         {pushSupported && pushPermission === 'default' && !pushSubscribed && (
           <div className="notification-banner">
             <span>Enable notifications to know when your squad is free</span>
@@ -284,14 +301,11 @@ export function Home() {
               </span>
               {!declined && <span className="active-friends-cta">Tap Sup to join</span>}
             </div>
-            {activeFriends.map(friend => (
-              <ReactionButtons
-                key={friend.id}
-                sessionId={friend.id}
-                currentReaction={myReactions[friend.id]}
-                onReact={handleReaction}
-              />
-            ))}
+            <ReactionButtons
+              sessionIds={activeFriends.map(f => f.id)}
+              currentReaction={consolidatedReaction}
+              onReact={handleReaction}
+            />
           </div>
         )}
 
@@ -305,79 +319,79 @@ export function Home() {
           </div>
         )}
 
-        <div className="map-container">
-          <Map
-            userLocation={location}
-            isSupActive={isSupActive}
-            friendSessions={activeFriends}
-            midpoint={midpoint}
-            myDestination={myDestination}
-          />
-        </div>
+        {friends.length === 0 ? (
+          <EmptySquad profile={profile} />
+        ) : (
+          <>
+            <div className="map-container">
+              <Map
+                userLocation={location}
+                isSupActive={isSupActive}
+                friendSessions={activeFriends}
+                midpoint={midpoint}
+                myDestination={myDestination}
+              />
+            </div>
 
-        {isSupActive && activeFriends.length > 0 && midpoint && (
-          <div className="suggestions-container">
-            <BarSuggestions
-              location={midpoint}
-              selectedBarId={selectedBarId}
-              onSelectBar={handleSelectBar}
-              friendDestinations={friendDestinations}
-            />
+            {isSupActive && activeFriends.length > 0 && midpoint && (
+              <div className="suggestions-container">
+                <BarSuggestions
+                  location={midpoint}
+                  selectedBarId={selectedBarId}
+                  onSelectBar={handleSelectBar}
+                  friendDestinations={friendDestinations}
+                />
+              </div>
+            )}
+
+            {!isSupActive && friends.length > 0 && (
+              <SquadActivity friendIds={friendIds} friends={friends} />
+            )}
+          </>
+        )}
+
+        {isSupActive && (
+          <div className="sup-status-card">
+            <p className="sup-status">
+              {activeFriends.length > 0
+                ? `${activeFriends.length} in your squad also free — check the map!`
+                : 'Your squad has been notified. Hang tight!'}
+            </p>
+            {mySessionReactions.length > 0 && (
+              <ReactionsSummary reactions={mySessionReactions} />
+            )}
+            {activeFriends.some(f => f.destination_name) && (
+              <div className="friend-destinations">
+                {activeFriends.filter(f => f.destination_name).map(f => (
+                  <p key={f.id} className="friend-destination-status">
+                    @{f.username} is heading to {f.destination_name}
+                  </p>
+                ))}
+              </div>
+            )}
+            {countdownText && (
+              <p className="sup-countdown">{countdownText}</p>
+            )}
           </div>
         )}
 
-        {!isSupActive && friends.length > 0 && (
-          <SquadActivity friendIds={friendIds} friends={friends} />
+        {!isSupActive && !declined && activeFriends.length === 0 && friends.length > 0 && (
+          <p className="sup-cta">Tap Sup to see who wants to hang</p>
         )}
 
-        <div className="sup-button-container">
-          {(error || locationError) && (
-            <div className="error-toast">{error || locationError}</div>
-          )}
-
-          {joinFlash && (
-            <div className="join-flash">You're in!</div>
-          )}
-
-          {(!declined || isSupActive) && (
-            <SupButton
-              isActive={isSupActive}
-              loading={supLoading || locationLoading}
-              onClick={handleSupToggle}
-              activeCount={activeFriends.length}
-            />
-          )}
-
-          {isSupActive ? (
-            <div className="sup-active-info">
-              <p className="sup-status">
-                {activeFriends.length > 0
-                  ? `${activeFriends.length} in your squad also free — check the map!`
-                  : 'Your squad has been notified. Hang tight!'}
-              </p>
-              {mySessionReactions.length > 0 && (
-                <ReactionsSummary reactions={mySessionReactions} />
-              )}
-              {activeFriends.some(f => f.destination_name) && (
-                <div className="friend-destinations">
-                  {activeFriends.filter(f => f.destination_name).map(f => (
-                    <p key={f.id} className="friend-destination-status">
-                      @{f.username} is heading to {f.destination_name}
-                    </p>
-                  ))}
-                </div>
-              )}
-              {countdownText && (
-                <p className="sup-countdown">{countdownText}</p>
-              )}
-            </div>
-          ) : declined ? (
-            <p className="sup-declined-text">You can always change your mind and tap "i'm in"</p>
-          ) : activeFriends.length === 0 && (
-            <p className="sup-cta">Tap Sup to see who wants to hang</p>
-          )}
-        </div>
+        {!isSupActive && declined && (
+          <p className="sup-declined-text">You can always change your mind and tap "i'm in"</p>
+        )}
       </main>
+
+      {(!declined || isSupActive) && (
+        <SupButton
+          isActive={isSupActive}
+          loading={supLoading || locationLoading}
+          onClick={handleSupToggle}
+          activeCount={activeFriends.length}
+        />
+      )}
     </div>
   )
 }

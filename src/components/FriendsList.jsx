@@ -22,7 +22,10 @@ export function FriendsList({ friends, activeFriends = [], onClose }) {
     const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
     if (isMobile && navigator.share) {
       try {
-        await navigator.share({ url: shareLink })
+        await navigator.share({
+          url: shareLink,
+          text: 'Join my squad on Sup — add to your home screen for notifications'
+        })
       } catch (err) {
         if (err.name !== 'AbortError') {
           handleCopy()

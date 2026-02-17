@@ -137,3 +137,31 @@
 .back-link:hover {
   text-decoration: underline;
 }
+
+.install-steps {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #f0f4ff;
+  border-radius: 0.75rem;
+  text-align: left;
+}
+
+.install-steps-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.install-steps-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  color: #555;
+  line-height: 1.8;
+}
+
+.install-icon {
+  display: inline-block;
+  font-size: 0.9rem;
+}

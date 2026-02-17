@@ -24,7 +24,7 @@ export function FriendsList({ friends, activeFriends = [], onClose }) {
       try {
         await navigator.share({
           url: shareLink,
-          text: 'Join my squad on Sup — add to your home screen for notifications'
+          text: 'Join my squad on Sup!\n\nAfter signing up, tap Share ⬆ then "Add to Home Screen" so you get push notifications when the squad is free.'
         })
       } catch (err) {
         if (err.name !== 'AbortError') {

@@ -114,7 +114,7 @@ export function Home() {
   return (
     <div className="home-container">
       <header className="home-header">
-        <h1 className="logo">Sup</h1>
+        <h1 className="logo">Sup <span className="tagline">— see who's free</span></h1>
         <nav className="nav-links">
           <button
             className="nav-button"

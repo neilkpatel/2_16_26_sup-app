@@ -25,6 +25,11 @@
   background-clip: text;
 }
 
+.tagline {
+  font-weight: 400;
+  font-size: 0.85rem;
+}
+
 .nav-links {
   display: flex;
   gap: 0.5rem;

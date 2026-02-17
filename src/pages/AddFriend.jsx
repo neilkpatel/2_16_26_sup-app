@@ -21,8 +21,8 @@ export function AddFriend() {
     f => f.username?.toLowerCase() === username?.toLowerCase()
   )
 
-  // Check if this is the current user
-  const isSelf = profile?.username?.toLowerCase() === username?.toLowerCase()
+  // Check if this is the current user — compare IDs (works even if profile hasn't loaded)
+  const isSelf = !!(user && friendProfile && user.id === friendProfile.id)
 
   // Fetch the friend's profile using direct REST call
   // (bypasses Supabase client auth state which can block in incognito)
@@ -78,7 +78,11 @@ export function AddFriend() {
     setError('')
 
     try {
-      await addFriend(username)
+      // Timeout after 10s to prevent infinite hang
+      const timeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Request timed out. Please try again.')), 10000)
+      )
+      await Promise.race([addFriend(username), timeout])
       setSuccess(true)
     } catch (err) {
       setError(err.message)

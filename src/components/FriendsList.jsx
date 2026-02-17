@@ -18,13 +18,11 @@ export function FriendsList({ friends, activeFriends = [], onClose }) {
   }
 
   const handleShare = async () => {
-    if (navigator.share) {
+    // Only use native share on mobile — on desktop it concatenates text+URL badly
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    if (isMobile && navigator.share) {
       try {
-        await navigator.share({
-          title: 'Join my squad on Sup!',
-          text: `Join my squad on Sup so we can hang out!`,
-          url: shareLink
-        })
+        await navigator.share({ url: shareLink })
       } catch (err) {
         if (err.name !== 'AbortError') {
           handleCopy()

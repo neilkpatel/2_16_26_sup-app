@@ -104,6 +104,11 @@
   font-size: 0.75rem;
 }
 
+.bar-walk {
+  color: #667eea;
+  font-weight: 600;
+}
+
 .bar-rating {
   color: #666;
 }

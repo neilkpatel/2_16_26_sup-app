@@ -68,13 +68,15 @@ export function BarSuggestions({ location }) {
               <h4 className="bar-name">{bar.name}</h4>
               <p className="bar-address">{bar.address}</p>
               <div className="bar-meta">
+                {bar.walkMinutes != null && (
+                  <span className="bar-walk">
+                    {bar.walkMinutes <= 1 ? '1 min walk' : `${bar.walkMinutes} min walk`}
+                  </span>
+                )}
                 {bar.rating && (
                   <span className="bar-rating">
                     <span className="star">&#9733;</span>
                     {bar.rating}
-                    {bar.totalRatings > 0 && (
-                      <span className="rating-count">({bar.totalRatings})</span>
-                    )}
                   </span>
                 )}
                 {bar.priceLevel !== null && (

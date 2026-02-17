@@ -10,6 +10,7 @@ import SupButton from '../components/SupButton'
 import BarSuggestions from '../components/BarSuggestions'
 import FriendsList from '../components/FriendsList'
 import InstallPrompt from '../components/InstallPrompt'
+import SquadActivity from '../components/SquadActivity'
 import { calculateMidpoint } from '../lib/geo'
 import { supabase } from '../lib/supabase'
 import './Home.css'
@@ -172,6 +173,10 @@ export function Home() {
           <div className="suggestions-container">
             <BarSuggestions location={midpoint} />
           </div>
+        )}
+
+        {!isSupActive && friends.length > 0 && (
+          <SquadActivity friendIds={friendIds} friends={friends} />
         )}
 
         <div className="sup-button-container">

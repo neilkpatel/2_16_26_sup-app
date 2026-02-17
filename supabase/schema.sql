@@ -38,7 +38,18 @@ create table public.sup_sessions (
   user_id uuid references public.users(id) on delete cascade not null,
   location geography(point, 4326),
   started_at timestamp with time zone default now() not null,
-  expires_at timestamp with time zone not null
+  expires_at timestamp with time zone not null,
+  destination_name text,
+  destination_location geography(point, 4326)
+);
+
+create table public.sup_reactions (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid references public.sup_sessions(id) on delete cascade not null,
+  user_id uuid references public.users(id) on delete cascade not null,
+  reaction text not null check (reaction in ('im_in', 'cant_tonight', 'maybe_later')),
+  created_at timestamptz default now() not null,
+  constraint unique_reaction unique (session_id, user_id)
 );
 
 create table public.push_subscriptions (
@@ -57,6 +68,7 @@ grant usage on schema public to anon, authenticated;
 grant all on public.users to anon, authenticated;
 grant all on public.friendships to authenticated;
 grant all on public.sup_sessions to authenticated;
+grant all on public.sup_reactions to authenticated;
 grant all on public.push_subscriptions to authenticated;
 
 -- ========================================
@@ -66,6 +78,7 @@ grant all on public.push_subscriptions to authenticated;
 alter table public.users enable row level security;
 alter table public.friendships enable row level security;
 alter table public.sup_sessions enable row level security;
+alter table public.sup_reactions enable row level security;
 alter table public.push_subscriptions enable row level security;
 
 -- ========================================
@@ -91,6 +104,25 @@ create policy "sessions_insert" on public.sup_sessions for insert with check (au
 create policy "sessions_update" on public.sup_sessions for update using (auth.uid() = user_id);
 create policy "sessions_delete" on public.sup_sessions for delete using (auth.uid() = user_id);
 
+-- Sup reactions: squad members can see/manage reactions on sessions they can see
+create policy "reactions_select" on public.sup_reactions for select using (
+  exists (
+    select 1 from public.sup_sessions s
+    where s.id = sup_reactions.session_id
+    and (
+      s.user_id = auth.uid()
+      or exists (
+        select 1 from public.friendships f
+        where auth.uid() in (f.user_id, f.friend_id)
+        and s.user_id in (f.user_id, f.friend_id)
+      )
+    )
+  )
+);
+create policy "reactions_insert" on public.sup_reactions for insert with check (auth.uid() = user_id);
+create policy "reactions_update" on public.sup_reactions for update using (auth.uid() = user_id);
+create policy "reactions_delete" on public.sup_reactions for delete using (auth.uid() = user_id);
+
 -- Push subscriptions: owner can manage own
 create policy "push_sub_select" on public.push_subscriptions for select using (auth.uid() = user_id);
 create policy "push_sub_insert" on public.push_subscriptions for insert with check (auth.uid() = user_id);
@@ -102,3 +134,4 @@ create policy "push_sub_delete" on public.push_subscriptions for delete using (a
 
 alter publication supabase_realtime add table public.friendships;
 alter publication supabase_realtime add table public.sup_sessions;
+alter publication supabase_realtime add table public.sup_reactions;

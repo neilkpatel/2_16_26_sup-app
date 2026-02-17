@@ -69,6 +69,26 @@
   background: #e5f5ec;
 }
 
+.bar-card-selected {
+  background: #eff6ff;
+  border: 2px solid #0ea5e9;
+}
+
+.bar-card-selected:hover {
+  background: #e0f2fe;
+}
+
+.bar-heading-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #0ea5e9;
+  background: #e0f2fe;
+  padding: 0.15rem 0.5rem;
+  border-radius: 1rem;
+  margin-bottom: 0.125rem;
+}
+
 .bar-rank {
   width: 28px;
   height: 28px;

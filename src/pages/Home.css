@@ -19,10 +19,19 @@
   font-size: 1.5rem;
   font-weight: 800;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
 }
 
 .tagline {
@@ -110,11 +119,25 @@
   font-size: 0.875rem;
 }
 
+.sup-active-info {
+  margin: 1rem 0 0;
+}
+
+.sup-active-info .sup-status {
+  margin: 0;
+}
+
+.sup-countdown {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: #999;
+  font-variant-numeric: tabular-nums;
+}
+
 .active-friends-banner {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: 0.25rem;
   background: #22c55e;
   color: white;
   padding: 0.75rem 1rem;
@@ -123,11 +146,29 @@
   z-index: 40;
 }
 
+.active-friends-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .active-friends-cta {
   font-size: 0.8rem;
   font-weight: 500;
   opacity: 0.9;
   white-space: nowrap;
+}
+
+.friend-destinations {
+  margin-top: 0.25rem;
+}
+
+.friend-destination-status {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: #0ea5e9;
+  font-weight: 600;
 }
 
 .notification-banner {

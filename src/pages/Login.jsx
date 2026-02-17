@@ -49,6 +49,7 @@ export function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
+        <img src="/logo.png" alt="Sup" className="login-logo" />
         <h1 className="login-title">Sup</h1>
         <p className="login-subtitle">See who's free to hang</p>
 

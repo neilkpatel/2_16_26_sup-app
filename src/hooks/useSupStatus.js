@@ -214,6 +214,36 @@ export function useSupStatus(userId, friendIds = []) {
     }
   }, [mySession])
 
+  // Set destination (bar the user is heading to)
+  const setDestination = useCallback(async (bar) => {
+    if (!mySession) return
+
+    try {
+      const updateData = bar
+        ? {
+            destination_name: bar.name,
+            destination_location: `POINT(${bar.location.lng} ${bar.location.lat})`
+          }
+        : {
+            destination_name: null,
+            destination_location: null
+          }
+
+      const { error: updateError } = await supabase
+        .from('sup_sessions')
+        .update(updateData)
+        .eq('id', mySession.id)
+
+      if (updateError) throw updateError
+
+      // Optimistic update
+      setMySession(prev => prev ? { ...prev, ...updateData } : prev)
+    } catch (err) {
+      console.error('Error setting destination:', err)
+      setError(err.message)
+    }
+  }, [mySession])
+
   // Initial fetch
   useEffect(() => {
     const init = async () => {
@@ -277,7 +307,8 @@ export function useSupStatus(userId, friendIds = []) {
   const friendSessionsWithLocations = useMemo(
     () => friendSessions.map(session => ({
       ...session,
-      parsedLocation: parseLocation(session.location)
+      parsedLocation: parseLocation(session.location),
+      parsedDestination: parseLocation(session.destination_location)
     })),
     [friendSessions]
   )
@@ -287,16 +318,25 @@ export function useSupStatus(userId, friendIds = []) {
     [mySession]
   )
 
+  const myDestination = useMemo(
+    () => mySession?.destination_name
+      ? { name: mySession.destination_name, location: parseLocation(mySession.destination_location) }
+      : null,
+    [mySession]
+  )
+
   return {
     isSupActive,
     mySession,
     myLocation: myParsedLocation,
+    myDestination,
     friendSessions: friendSessionsWithLocations,
     loading,
     error,
     goSup,
     cancelSup,
     updateLocation,
+    setDestination,
     refresh: async () => {
       await Promise.all([fetchMyStatus(), fetchFriendSessions()])
     }

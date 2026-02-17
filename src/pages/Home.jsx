@@ -1,16 +1,19 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useFriends } from '../hooks/useFriends'
 import { useSupStatus } from '../hooks/useSupStatus'
 import { useLocation } from '../hooks/useLocation'
 import { usePushNotifications } from '../hooks/usePushNotifications'
+import { useReactions } from '../hooks/useReactions'
 import Map from '../components/Map'
 import SupButton from '../components/SupButton'
 import BarSuggestions from '../components/BarSuggestions'
 import FriendsList from '../components/FriendsList'
 import InstallPrompt from '../components/InstallPrompt'
 import SquadActivity from '../components/SquadActivity'
+import ReactionButtons from '../components/ReactionButtons'
+import ReactionsSummary from '../components/ReactionsSummary'
 import { calculateMidpoint } from '../lib/geo'
 import { supabase } from '../lib/supabase'
 import './Home.css'
@@ -22,10 +25,13 @@ export function Home() {
 
   const {
     isSupActive,
+    mySession,
     myLocation,
+    myDestination,
     friendSessions,
     goSup,
     cancelSup,
+    setDestination,
     loading: supLoading
   } = useSupStatus(user?.id, friendIds)
 
@@ -43,8 +49,67 @@ export function Home() {
     subscribe: pushSubscribe
   } = usePushNotifications(user?.id)
 
+  // Collect session IDs for reactions — friend sessions (when NOT Sup'd) or my session (when Sup'd)
+  const reactionSessionIds = useMemo(() => {
+    if (isSupActive && mySession) {
+      // When Sup'd, watch reactions on my own session
+      return [mySession.id]
+    }
+    // When NOT Sup'd, watch friend sessions to react to
+    return friendSessions.map(s => s.id)
+  }, [isSupActive, mySession, friendSessions])
+
+  const {
+    myReactions,
+    sendReaction,
+    getReactionsForSession
+  } = useReactions(user?.id, reactionSessionIds)
+
   const [showFriends, setShowFriends] = useState(false)
   const [error, setError] = useState('')
+  const [timeLeft, setTimeLeft] = useState(null)
+  const [selectedBarId, setSelectedBarId] = useState(null)
+
+  // Countdown timer for active Sup session
+  useEffect(() => {
+    if (!isSupActive || !mySession?.expires_at) {
+      setTimeLeft(null)
+      return
+    }
+
+    const tick = () => {
+      const remaining = new Date(mySession.expires_at) - Date.now()
+      if (remaining <= 0) {
+        setTimeLeft(null)
+        cancelSup().catch(() => {})
+        return
+      }
+      setTimeLeft(remaining)
+    }
+
+    tick()
+    const interval = setInterval(tick, 1000)
+    return () => clearInterval(interval)
+  }, [isSupActive, mySession?.expires_at, cancelSup])
+
+  // Clear selected bar when Sup ends
+  useEffect(() => {
+    if (!isSupActive) {
+      setSelectedBarId(null)
+    }
+  }, [isSupActive])
+
+  // Format countdown string
+  const countdownText = useMemo(() => {
+    if (!timeLeft) return null
+    const totalMins = Math.floor(timeLeft / 60000)
+    const hrs = Math.floor(totalMins / 60)
+    const mins = totalMins % 60
+    const secs = Math.floor((timeLeft % 60000) / 1000)
+    if (hrs > 0) return `${hrs}h ${mins}m left`
+    if (mins >= 10) return `${mins}m left`
+    return `${mins}m ${secs}s left`
+  }, [timeLeft])
 
   // Calculate midpoint of all active Sup users
   const midpoint = useMemo(() => {
@@ -70,6 +135,18 @@ export function Home() {
       username: session.user?.username
     }))
   }, [friendSessions])
+
+  // Handle bar selection for "heading there"
+  const handleSelectBar = useCallback((bar) => {
+    if (selectedBarId === bar.id) {
+      // Deselect — tap same bar again
+      setSelectedBarId(null)
+      setDestination(null)
+    } else {
+      setSelectedBarId(bar.id)
+      setDestination(bar)
+    }
+  }, [selectedBarId, setDestination])
 
   const handleSupToggle = async () => {
     setError('')
@@ -112,10 +189,19 @@ export function Home() {
     }
   }, [location, locationLoading, locationError, getCurrentLocation])
 
+  // Reactions on my session (shown when I'm Sup'd)
+  const mySessionReactions = useMemo(() => {
+    if (!mySession) return []
+    return getReactionsForSession(mySession.id)
+  }, [mySession, getReactionsForSession])
+
   return (
     <div className="home-container">
       <header className="home-header">
-        <h1 className="logo">Sup <span className="tagline">— see who's free</span></h1>
+        <h1 className="logo">
+          <img src="/logo.png" alt="Sup" className="logo-icon" />
+          <span className="tagline">— see who's free</span>
+        </h1>
         <nav className="nav-links">
           <button
             className="nav-button"
@@ -141,12 +227,22 @@ export function Home() {
 
         {!isSupActive && activeFriends.length > 0 && (
           <div className="active-friends-banner">
-            <span>
-              {activeFriends.length === 1
-                ? `@${activeFriends[0].username} is free to hang!`
-                : `${activeFriends.map(f => `@${f.username}`).join(', ')} are free to hang!`}
-            </span>
-            <span className="active-friends-cta">Tap Sup to join</span>
+            <div className="active-friends-info">
+              <span>
+                {activeFriends.length === 1
+                  ? `@${activeFriends[0].username} is free to hang!`
+                  : `${activeFriends.map(f => `@${f.username}`).join(', ')} are free to hang!`}
+              </span>
+              <span className="active-friends-cta">Tap Sup to join</span>
+            </div>
+            {activeFriends.map(friend => (
+              <ReactionButtons
+                key={friend.id}
+                sessionId={friend.id}
+                currentReaction={myReactions[friend.id]}
+                onReact={sendReaction}
+              />
+            ))}
           </div>
         )}
 
@@ -166,12 +262,17 @@ export function Home() {
             isSupActive={isSupActive}
             friendSessions={activeFriends}
             midpoint={midpoint}
+            myDestination={myDestination}
           />
         </div>
 
         {isSupActive && activeFriends.length > 0 && midpoint && (
           <div className="suggestions-container">
-            <BarSuggestions location={midpoint} />
+            <BarSuggestions
+              location={midpoint}
+              selectedBarId={selectedBarId}
+              onSelectBar={handleSelectBar}
+            />
           </div>
         )}
 
@@ -192,11 +293,28 @@ export function Home() {
           />
 
           {isSupActive ? (
-            <p className="sup-status">
-              {activeFriends.length > 0
-                ? `${activeFriends.length} in your squad also free — check the map!`
-                : 'Your squad has been notified. Hang tight!'}
-            </p>
+            <div className="sup-active-info">
+              <p className="sup-status">
+                {activeFriends.length > 0
+                  ? `${activeFriends.length} in your squad also free — check the map!`
+                  : 'Your squad has been notified. Hang tight!'}
+              </p>
+              {mySessionReactions.length > 0 && (
+                <ReactionsSummary reactions={mySessionReactions} />
+              )}
+              {activeFriends.some(f => f.destination_name) && (
+                <div className="friend-destinations">
+                  {activeFriends.filter(f => f.destination_name).map(f => (
+                    <p key={f.id} className="friend-destination-status">
+                      @{f.username} is heading to {f.destination_name}
+                    </p>
+                  ))}
+                </div>
+              )}
+              {countdownText && (
+                <p className="sup-countdown">{countdownText}</p>
+              )}
+            </div>
           ) : activeFriends.length === 0 && (
             <p className="sup-cta">Tap Sup to see who wants to hang</p>
           )}

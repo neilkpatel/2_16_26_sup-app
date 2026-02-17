@@ -16,6 +16,14 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
+.login-logo {
+  display: block;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 0.75rem;
+  border-radius: 16px;
+}
+
 .login-title {
   font-size: 3rem;
   font-weight: 800;

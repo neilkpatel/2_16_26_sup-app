@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { searchNearbyBars, formatPriceLevel } from '../lib/places'
 import './BarSuggestions.css'
 
-export function BarSuggestions({ location }) {
+export function BarSuggestions({ location, selectedBarId, onSelectBar }) {
   const [bars, setBars] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -62,10 +62,18 @@ export function BarSuggestions({ location }) {
       <h3>Suggested meetup spots</h3>
       <div className="bars-list">
         {bars.map((bar, index) => (
-          <div key={bar.id} className={`bar-card ${bar.id === 'ChIJL0D4jJNZwokRWQTfTBLjlvw' ? 'bar-card-featured' : ''}`}>
+          <div
+            key={bar.id}
+            className={`bar-card ${bar.id === 'ChIJL0D4jJNZwokRWQTfTBLjlvw' ? 'bar-card-featured' : ''} ${selectedBarId === bar.id ? 'bar-card-selected' : ''}`}
+            onClick={() => onSelectBar?.(bar)}
+            style={{ cursor: onSelectBar ? 'pointer' : 'default' }}
+          >
             <div className="bar-rank">{index + 1}</div>
             <div className="bar-info">
               <h4 className="bar-name">{bar.name}</h4>
+              {selectedBarId === bar.id && (
+                <span className="bar-heading-badge">Heading here</span>
+              )}
               <p className="bar-address">{bar.address}</p>
               <div className="bar-meta">
                 {bar.walkMinutes != null && (
@@ -96,6 +104,7 @@ export function BarSuggestions({ location }) {
               target="_blank"
               rel="noopener noreferrer"
               className="bar-directions"
+              onClick={(e) => e.stopPropagation()}
             >
               Directions
             </a>

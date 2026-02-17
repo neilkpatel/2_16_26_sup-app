@@ -60,6 +60,15 @@
   background: #e0e0e0;
 }
 
+.nav-button.invite-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.nav-button.invite-btn:hover {
+  opacity: 0.9;
+}
+
 .home-main {
   flex: 1;
   display: flex;

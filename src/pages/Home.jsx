@@ -67,6 +67,7 @@ export function Home() {
   } = useReactions(user?.id, reactionSessionIds)
 
   const [showFriends, setShowFriends] = useState(false)
+  const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
   const [timeLeft, setTimeLeft] = useState(null)
   const [selectedBarId, setSelectedBarId] = useState(null)
@@ -210,6 +211,33 @@ export function Home() {
     }
   }, [sendReaction, isSupActive, triggerSup])
 
+  // Share squad link
+  const shareLink = `${window.location.origin}/add/${profile?.username}`
+  const handleShareLink = useCallback(async () => {
+    const text = 'Join my squad on Sup!\n\nAfter signing up, tap Share ⬆ then "Add to Home Screen" so you get push notifications. When it asks, allow notifications and location so we can find a spot to meet up.'
+    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    if (isMobile && navigator.share) {
+      try {
+        await navigator.share({ url: shareLink, text })
+        return
+      } catch (err) {
+        if (err.name === 'AbortError') return
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(shareLink)
+    } catch {
+      const input = document.createElement('input')
+      input.value = shareLink
+      document.body.appendChild(input)
+      input.select()
+      document.execCommand('copy')
+      document.body.removeChild(input)
+    }
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [shareLink])
+
   // Request location on mount if not available
   useEffect(() => {
     if (!location && !locationLoading && !locationError) {
@@ -261,6 +289,9 @@ export function Home() {
           <span className="tagline">— see who's free</span>
         </h1>
         <nav className="nav-links">
+          <button className="nav-button invite-btn" onClick={handleShareLink}>
+            {copied ? 'Copied!' : 'Invite'}
+          </button>
           <button
             className="nav-button"
             onClick={() => setShowFriends(!showFriends)}

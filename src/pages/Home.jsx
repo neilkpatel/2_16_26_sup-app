@@ -94,6 +94,14 @@ export function Home() {
     return () => clearInterval(interval)
   }, [isSupActive, mySession?.expires_at, cancelSup])
 
+  // Get active friends (those with active sup sessions)
+  const activeFriends = useMemo(() => {
+    return friendSessions.map(session => ({
+      ...session,
+      username: session.user?.username
+    }))
+  }, [friendSessions])
+
   // Clear selected bar when Sup ends
   useEffect(() => {
     if (!isSupActive) {
@@ -136,14 +144,6 @@ export function Home() {
 
     return calculateMidpoint(points)
   }, [myLocation, friendSessions])
-
-  // Get active friends (those with active sup sessions)
-  const activeFriends = useMemo(() => {
-    return friendSessions.map(session => ({
-      ...session,
-      username: session.user?.username
-    }))
-  }, [friendSessions])
 
   // Handle bar selection for "heading there"
   const handleSelectBar = useCallback((bar) => {

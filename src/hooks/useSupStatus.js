@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 
-const SUP_DURATION_HOURS = 2
+const SUP_DURATION_MINUTES = 5
 
 /**
  * Parse a 64-bit double from hex string
@@ -144,7 +144,7 @@ export function useSupStatus(userId, friendIds = []) {
         .eq('user_id', userId)
 
       const expiresAt = new Date()
-      expiresAt.setHours(expiresAt.getHours() + SUP_DURATION_HOURS)
+      expiresAt.setMinutes(expiresAt.getMinutes() + SUP_DURATION_MINUTES)
 
       const { data, error: insertError } = await supabase
         .from('sup_sessions')

@@ -156,8 +156,17 @@ export function Home() {
     } else {
       setSelectedBarId(bar.id)
       setDestination(bar)
+
+      // Notify active squad members about bar choice
+      supabase.functions.invoke('send-push', {
+        body: {
+          userId: user.id,
+          message: `${profile?.username} is heading to ${bar.name}`,
+          targetActive: true
+        }
+      })
     }
-  }, [selectedBarId, setDestination])
+  }, [selectedBarId, setDestination, user?.id, profile?.username])
 
   // Core Sup trigger — shared by Sup button and "i'm in" reaction
   const triggerSup = useCallback(async () => {

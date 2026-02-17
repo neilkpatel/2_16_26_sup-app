@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userId } = await req.json()
+    const { userId, message, targetActive } = await req.json()
     if (!userId) {
       return new Response(JSON.stringify({ error: "userId required" }), {
         status: 400,
@@ -56,7 +56,7 @@ serve(async (req) => {
       })
     }
 
-    // Filter out squad members who already have an active Sup session
+    // Filter squad members based on active Sup status
     const { data: activeSessions } = await supabase
       .from("sup_sessions")
       .select("user_id")
@@ -64,7 +64,12 @@ serve(async (req) => {
       .gt("expires_at", new Date().toISOString())
 
     const alreadySupIds = new Set((activeSessions || []).map((s) => s.user_id))
-    const notifyIds = squadIds.filter((id) => !alreadySupIds.has(id))
+
+    // targetActive: notify only Sup'd users (e.g. bar selection)
+    // default: notify only non-Sup'd users (e.g. new Sup broadcast)
+    const notifyIds = targetActive
+      ? squadIds.filter((id) => alreadySupIds.has(id))
+      : squadIds.filter((id) => !alreadySupIds.has(id))
 
     if (notifyIds.length === 0) {
       return new Response(
@@ -73,7 +78,7 @@ serve(async (req) => {
       )
     }
 
-    // Get push subscriptions for squad members who aren't already Sup'd
+    // Get push subscriptions for target squad members
     const { data: subscriptions } = await supabase
       .from("push_subscriptions")
       .select("id, user_id, subscription")
@@ -94,7 +99,7 @@ serve(async (req) => {
 
     const payload = JSON.stringify({
       title: "Sup",
-      body: `${user.username} is free to hang`,
+      body: message || `${user.username} is free to hang`,
       url: "/",
     })
 

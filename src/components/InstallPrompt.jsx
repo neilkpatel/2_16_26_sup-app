@@ -1,30 +1,37 @@
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 import './InstallPrompt.css'
 
 const DISMISS_KEY = 'sup-install-prompt-dismissed'
 
-/**
- * Shows "Add to Home Screen" instructions on iOS Safari
- * when not running in standalone (PWA) mode.
- */
+function shouldShow() {
+  if (typeof navigator === 'undefined') return false
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || navigator.standalone === true
+  const isDismissed = localStorage.getItem(DISMISS_KEY)
+  return isIOS && !isStandalone && !isDismissed
+}
+
+let showState = shouldShow()
+const listeners = new Set()
+
+function subscribe(cb) {
+  listeners.add(cb)
+  return () => listeners.delete(cb)
+}
+
+function getSnapshot() {
+  return showState
+}
+
+function dismiss() {
+  localStorage.setItem(DISMISS_KEY, 'true')
+  showState = false
+  listeners.forEach(cb => cb())
+}
+
 export function InstallPrompt() {
-  const [show, setShow] = useState(false)
-
-  useEffect(() => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-      || navigator.standalone === true
-    const isDismissed = localStorage.getItem(DISMISS_KEY)
-
-    if (isIOS && !isStandalone && !isDismissed) {
-      setShow(true)
-    }
-  }, [])
-
-  const handleDismiss = () => {
-    localStorage.setItem(DISMISS_KEY, 'true')
-    setShow(false)
-  }
+  const show = useSyncExternalStore(subscribe, getSnapshot)
 
   if (!show) return null
 
@@ -38,7 +45,7 @@ export function InstallPrompt() {
           Tap <span className="install-prompt-icon">↑</span> Share then <strong>Add to Home Screen</strong>
         </p>
       </div>
-      <button onClick={handleDismiss} className="install-prompt-dismiss">&times;</button>
+      <button onClick={dismiss} className="install-prompt-dismiss">&times;</button>
     </div>
   )
 }

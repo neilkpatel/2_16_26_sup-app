@@ -43,9 +43,9 @@ export function Profile() {
           text: `Add me on Sup so we can hang out! My username is @${profile?.username}`,
           url: shareLink
         })
-      } catch (err) {
+      } catch (shareErr) {
         // User cancelled or error
-        if (err.name !== 'AbortError') {
+        if (shareErr.name !== 'AbortError') {
           handleCopyLink()
         }
       }

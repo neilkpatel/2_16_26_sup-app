@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useFriends } from '../hooks/useFriends'
-import { supabase } from '../lib/supabase'
 import './AddFriend.css'
 
 export function AddFriend() {
@@ -25,7 +24,8 @@ export function AddFriend() {
   // Check if this is the current user
   const isSelf = profile?.username?.toLowerCase() === username?.toLowerCase()
 
-  // Fetch the friend's profile
+  // Fetch the friend's profile using direct REST call
+  // (bypasses Supabase client auth state which can block in incognito)
   useEffect(() => {
     async function fetchFriend() {
       if (!username) {
@@ -34,20 +34,27 @@ export function AddFriend() {
       }
 
       try {
-        const { data, error: fetchError } = await supabase
-          .from('users')
-          .select('id, username')
-          .eq('username', username.toLowerCase())
-          .single()
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+        const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-        if (fetchError) {
-          if (fetchError.code === 'PGRST116') {
-            setError('User not found')
-          } else {
-            throw fetchError
+        const res = await fetch(
+          `${supabaseUrl}/rest/v1/users?username=eq.${encodeURIComponent(username.toLowerCase())}&select=id,username`,
+          {
+            headers: {
+              'apikey': supabaseKey,
+              'Accept': 'application/json'
+            }
           }
+        )
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+        const users = await res.json()
+
+        if (users.length === 0) {
+          setError('User not found')
         } else {
-          setFriendProfile(data)
+          setFriendProfile(users[0])
         }
       } catch (err) {
         console.error('Error fetching friend:', err)

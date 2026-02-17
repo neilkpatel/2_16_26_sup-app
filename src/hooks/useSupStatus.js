@@ -28,9 +28,9 @@ export function useSupStatus(userId, friendIds = []) {
         .gt('expires_at', new Date().toISOString())
         .order('started_at', { ascending: false })
         .limit(1)
-        .single()
+        .maybeSingle()
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
+      if (fetchError) {
         throw fetchError
       }
 

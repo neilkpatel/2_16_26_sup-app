@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { searchNearbyBars, formatPriceLevel } from '../lib/places'
 import './BarSuggestions.css'
 
-export function BarSuggestions({ location, selectedBarId, onSelectBar }) {
+export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDestinations = [] }) {
   const [bars, setBars] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -28,6 +28,40 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar }) {
     fetchBars()
   }, [location?.lat, location?.lng])
 
+  // Build display list: pin friend destinations to top
+  const displayBars = useMemo(() => {
+    if (!friendDestinations.length) return bars
+
+    // Collect unique friend destinations
+    const pinned = []
+    const pinnedNames = new Set()
+    friendDestinations.forEach(fd => {
+      if (!pinnedNames.has(fd.name)) {
+        pinnedNames.add(fd.name)
+        // Check if this bar exists in our search results
+        const existing = bars.find(b => b.name === fd.name)
+        pinned.push({
+          ...(existing || {
+            id: `dest-${fd.name}`,
+            name: fd.name,
+            address: '',
+            location: fd.location,
+            rating: null,
+            priceLevel: null,
+            walkMinutes: null,
+            isOpen: null
+          }),
+          _pinnedBy: fd.usernames
+        })
+      }
+    })
+
+    // Remove pinned bars from regular list to avoid duplicates
+    const rest = bars.filter(b => !pinnedNames.has(b.name))
+
+    return [...pinned, ...rest]
+  }, [bars, friendDestinations])
+
   if (loading) {
     return (
       <div className="bar-suggestions">
@@ -49,7 +83,7 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar }) {
     )
   }
 
-  if (bars.length === 0) {
+  if (displayBars.length === 0 && bars.length === 0) {
     return (
       <div className="bar-suggestions">
         <p className="bars-empty">No bars found nearby</p>
@@ -61,20 +95,27 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar }) {
     <div className="bar-suggestions">
       <h3>Suggested meetup spots</h3>
       <div className="bars-list">
-        {bars.map((bar, index) => (
+        {displayBars.map((bar, index) => (
           <div
             key={bar.id}
-            className={`bar-card ${bar.id === 'ChIJL0D4jJNZwokRWQTfTBLjlvw' ? 'bar-card-featured' : ''} ${selectedBarId === bar.id ? 'bar-card-selected' : ''}`}
+            className={`bar-card ${bar._pinnedBy ? 'bar-card-pinned' : ''} ${bar.id === 'ChIJL0D4jJNZwokRWQTfTBLjlvw' ? 'bar-card-featured' : ''} ${selectedBarId === bar.id ? 'bar-card-selected' : ''}`}
             onClick={() => onSelectBar?.(bar)}
             style={{ cursor: onSelectBar ? 'pointer' : 'default' }}
           >
-            <div className="bar-rank">{index + 1}</div>
+            <div className={`bar-rank ${bar._pinnedBy ? 'bar-rank-pinned' : ''}`}>
+              {bar._pinnedBy ? '!' : index + 1}
+            </div>
             <div className="bar-info">
               <h4 className="bar-name">{bar.name}</h4>
-              {selectedBarId === bar.id && (
+              {bar._pinnedBy && (
+                <span className="bar-pinned-badge">
+                  @{bar._pinnedBy.join(', @')} heading here
+                </span>
+              )}
+              {selectedBarId === bar.id && !bar._pinnedBy && (
                 <span className="bar-heading-badge">Heading here</span>
               )}
-              <p className="bar-address">{bar.address}</p>
+              {bar.address && <p className="bar-address">{bar.address}</p>}
               <div className="bar-meta">
                 {bar.walkMinutes != null && (
                   <span className="bar-walk">
@@ -99,15 +140,17 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar }) {
                 )}
               </div>
             </div>
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${bar.location.lat},${bar.location.lng}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bar-directions"
-              onClick={(e) => e.stopPropagation()}
-            >
-              Directions
-            </a>
+            {bar.location && (
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${bar.location.lat},${bar.location.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bar-directions"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Directions
+              </a>
+            )}
           </div>
         ))}
       </div>

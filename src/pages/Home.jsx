@@ -69,6 +69,8 @@ export function Home() {
   const [error, setError] = useState('')
   const [timeLeft, setTimeLeft] = useState(null)
   const [selectedBarId, setSelectedBarId] = useState(null)
+  const [joinFlash, setJoinFlash] = useState(false)
+  const [declined, setDeclined] = useState(false)
 
   // Countdown timer for active Sup session
   useEffect(() => {
@@ -98,6 +100,13 @@ export function Home() {
       setSelectedBarId(null)
     }
   }, [isSupActive])
+
+  // Clear declined state when no friends are active
+  useEffect(() => {
+    if (activeFriends.length === 0) {
+      setDeclined(false)
+    }
+  }, [activeFriends.length])
 
   // Format countdown string
   const countdownText = useMemo(() => {
@@ -148,6 +157,34 @@ export function Home() {
     }
   }, [selectedBarId, setDestination])
 
+  // Core Sup trigger — shared by Sup button and "i'm in" reaction
+  const triggerSup = useCallback(async () => {
+    setError('')
+    try {
+      let loc = location
+      if (!loc) {
+        loc = await getCurrentLocation()
+      }
+      await goSup(loc)
+
+      if (pushSupported && !pushSubscribed) {
+        pushSubscribe()
+      }
+
+      // Fire-and-forget: notify squad via edge function
+      supabase.functions.invoke('send-push', {
+        body: { userId: user.id }
+      })
+
+      // Show "You're in!" flash
+      setJoinFlash(true)
+      setTimeout(() => setJoinFlash(false), 2000)
+      setDeclined(false)
+    } catch (err) {
+      setError(err.message)
+    }
+  }, [location, getCurrentLocation, goSup, pushSupported, pushSubscribed, pushSubscribe, user?.id])
+
   const handleSupToggle = async () => {
     setError('')
 
@@ -158,27 +195,20 @@ export function Home() {
         setError(err.message)
       }
     } else {
-      try {
-        let loc = location
-        if (!loc) {
-          loc = await getCurrentLocation()
-        }
-        await goSup(loc)
-
-        // After going Sup: prompt for push if not subscribed, then notify squad
-        if (pushSupported && !pushSubscribed) {
-          pushSubscribe()
-        }
-
-        // Fire-and-forget: notify squad via edge function
-        supabase.functions.invoke('send-push', {
-          body: { userId: user.id }
-        })
-      } catch (err) {
-        setError(err.message)
-      }
+      await triggerSup()
     }
   }
+
+  // Handle reaction — "i'm in" auto-triggers Sup, others decline
+  const handleReaction = useCallback(async (sessionId, reaction) => {
+    await sendReaction(sessionId, reaction)
+
+    if (reaction === 'im_in' && !isSupActive) {
+      await triggerSup()
+    } else if (reaction === 'cant_tonight' || reaction === 'maybe_later') {
+      setDeclined(true)
+    }
+  }, [sendReaction, isSupActive, triggerSup])
 
   // Request location on mount if not available
   useEffect(() => {
@@ -188,6 +218,26 @@ export function Home() {
       })
     }
   }, [location, locationLoading, locationError, getCurrentLocation])
+
+  // Friend destinations for pinning bars
+  const friendDestinations = useMemo(() => {
+    const dests = []
+    activeFriends.forEach(f => {
+      if (f.destination_name && f.parsedDestination) {
+        const existing = dests.find(d => d.name === f.destination_name)
+        if (existing) {
+          existing.usernames.push(f.username)
+        } else {
+          dests.push({
+            name: f.destination_name,
+            location: f.parsedDestination,
+            usernames: [f.username]
+          })
+        }
+      }
+    })
+    return dests
+  }, [activeFriends])
 
   // Reactions on my session (shown when I'm Sup'd)
   const mySessionReactions = useMemo(() => {
@@ -233,14 +283,14 @@ export function Home() {
                   ? `@${activeFriends[0].username} is free to hang!`
                   : `${activeFriends.map(f => `@${f.username}`).join(', ')} are free to hang!`}
               </span>
-              <span className="active-friends-cta">Tap Sup to join</span>
+              {!declined && <span className="active-friends-cta">Tap Sup to join</span>}
             </div>
             {activeFriends.map(friend => (
               <ReactionButtons
                 key={friend.id}
                 sessionId={friend.id}
                 currentReaction={myReactions[friend.id]}
-                onReact={sendReaction}
+                onReact={handleReaction}
               />
             ))}
           </div>
@@ -272,6 +322,7 @@ export function Home() {
               location={midpoint}
               selectedBarId={selectedBarId}
               onSelectBar={handleSelectBar}
+              friendDestinations={friendDestinations}
             />
           </div>
         )}
@@ -285,12 +336,18 @@ export function Home() {
             <div className="error-toast">{error || locationError}</div>
           )}
 
-          <SupButton
-            isActive={isSupActive}
-            loading={supLoading || locationLoading}
-            onClick={handleSupToggle}
-            activeCount={activeFriends.length}
-          />
+          {joinFlash && (
+            <div className="join-flash">You're in!</div>
+          )}
+
+          {(!declined || isSupActive) && (
+            <SupButton
+              isActive={isSupActive}
+              loading={supLoading || locationLoading}
+              onClick={handleSupToggle}
+              activeCount={activeFriends.length}
+            />
+          )}
 
           {isSupActive ? (
             <div className="sup-active-info">
@@ -315,6 +372,8 @@ export function Home() {
                 <p className="sup-countdown">{countdownText}</p>
               )}
             </div>
+          ) : declined ? (
+            <p className="sup-declined-text">You can always change your mind and tap "i'm in"</p>
           ) : activeFriends.length === 0 && (
             <p className="sup-cta">Tap Sup to see who wants to hang</p>
           )}

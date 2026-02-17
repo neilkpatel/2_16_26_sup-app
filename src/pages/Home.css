@@ -199,6 +199,43 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+/* "You're in!" flash */
+.join-flash {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #22c55e;
+  margin-bottom: 0.75rem;
+  animation: flash-in 2s ease-out forwards;
+}
+
+@keyframes flash-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  30% {
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Declined state text */
+.sup-declined-text {
+  margin: 1rem 0 0;
+  color: #999;
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
 /* Mobile adjustments */
 @media (max-width: 640px) {
   .friends-panel {

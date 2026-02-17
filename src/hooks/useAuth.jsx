@@ -150,16 +150,12 @@ export function AuthProvider({ children }) {
   // Initialize auth state — single flow, no races
   useEffect(() => {
     // onAuthStateChange fires for the initial session AND subsequent changes.
-    // We use this as the SOLE source of truth (no separate getSession call).
+    // IMPORTANT: Do NOT call async supabase methods inside this callback —
+    // the auth client locks during the callback, causing deadlocks.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         if (session?.user) {
           setUser(session.user)
-          // Only fetch profile on initial load or sign-in events
-          // (signUp/signIn handle their own profile fetch)
-          if (!initialized.current || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            await fetchProfile(session.user.id)
-          }
         } else {
           setUser(null)
           setProfile(null)
@@ -182,7 +178,15 @@ export function AuthProvider({ children }) {
       subscription.unsubscribe()
       clearTimeout(timeout)
     }
-  }, [fetchProfile])
+  }, [])
+
+  // Fetch profile when user changes — separate from onAuthStateChange
+  // to avoid Supabase auth client deadlock
+  useEffect(() => {
+    if (user?.id) {
+      fetchProfile(user.id)
+    }
+  }, [user?.id, fetchProfile])
 
   const value = {
     user,

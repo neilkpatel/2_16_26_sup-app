@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, createContext, useContext } from 'react'
+import { useState, useEffect, useCallback, useRef, createContext, useContext } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
@@ -11,6 +11,7 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const initialized = useRef(false)
 
   // Fetch user profile from our users table
   const fetchProfile = useCallback(async (userId) => {
@@ -19,11 +20,9 @@ export function AuthProvider({ children }) {
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        throw fetchError
-      }
+      if (fetchError) throw fetchError
 
       setProfile(data)
       return data
@@ -43,7 +42,7 @@ export function AuthProvider({ children }) {
         .from('users')
         .select('username')
         .eq('username', username.toLowerCase())
-        .single()
+        .maybeSingle()
 
       if (existingUser) {
         throw new Error('Username already taken')
@@ -68,6 +67,7 @@ export function AuthProvider({ children }) {
 
         if (profileError) throw profileError
 
+        // Set state directly — don't rely on onAuthStateChange
         setUser(data.user)
         await fetchProfile(data.user.id)
       }
@@ -127,7 +127,7 @@ export function AuthProvider({ children }) {
         .select('username')
         .eq('username', newUsername.toLowerCase())
         .neq('id', user.id)
-        .single()
+        .maybeSingle()
 
       if (existingUser) {
         throw new Error('Username already taken')
@@ -147,31 +147,41 @@ export function AuthProvider({ children }) {
     }
   }, [user, fetchProfile])
 
-  // Initialize auth state
+  // Initialize auth state — single flow, no races
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        fetchProfile(session.user.id)
-      }
-      setLoading(false)
-    })
-
-    // Listen for auth changes
+    // onAuthStateChange fires for the initial session AND subsequent changes.
+    // We use this as the SOLE source of truth (no separate getSession call).
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null)
         if (session?.user) {
-          await fetchProfile(session.user.id)
+          setUser(session.user)
+          // Only fetch profile on initial load or sign-in events
+          // (signUp/signIn handle their own profile fetch)
+          if (!initialized.current || event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            await fetchProfile(session.user.id)
+          }
         } else {
+          setUser(null)
           setProfile(null)
         }
+        initialized.current = true
         setLoading(false)
       }
     )
 
-    return () => subscription.unsubscribe()
+    // Safety timeout — if onAuthStateChange never fires (edge case),
+    // don't leave the user on a loading screen forever
+    const timeout = setTimeout(() => {
+      if (!initialized.current) {
+        initialized.current = true
+        setLoading(false)
+      }
+    }, 5000)
+
+    return () => {
+      subscription.unsubscribe()
+      clearTimeout(timeout)
+    }
   }, [fetchProfile])
 
   const value = {

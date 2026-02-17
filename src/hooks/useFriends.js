@@ -71,7 +71,7 @@ export function useFriends(userId) {
         .from('users')
         .select('id, username')
         .eq('username', friendUsername.toLowerCase())
-        .single()
+        .maybeSingle()
 
       if (findError || !friendData) {
         throw new Error('User not found')
@@ -86,7 +86,7 @@ export function useFriends(userId) {
         .from('friendships')
         .select('id')
         .or(`and(user_id.eq.${userId},friend_id.eq.${friendData.id}),and(user_id.eq.${friendData.id},friend_id.eq.${userId})`)
-        .single()
+        .maybeSingle()
 
       if (existingFriendship) {
         throw new Error('Already friends with this user')
@@ -132,10 +132,10 @@ export function useFriends(userId) {
   useEffect(() => {
     if (!userId) return
 
-    fetchFriends()
+    fetchFriends().catch(() => {})
 
     const subscription = supabase
-      .channel('friendships-changes')
+      .channel(`friendships-${userId}`)
       .on(
         'postgres_changes',
         {
@@ -144,7 +144,7 @@ export function useFriends(userId) {
           table: 'friendships',
           filter: `user_id=eq.${userId}`
         },
-        () => fetchFriends()
+        () => { fetchFriends().catch(() => {}) }
       )
       .on(
         'postgres_changes',
@@ -154,7 +154,7 @@ export function useFriends(userId) {
           table: 'friendships',
           filter: `friend_id=eq.${userId}`
         },
-        () => fetchFriends()
+        () => { fetchFriends().catch(() => {}) }
       )
       .subscribe()
 

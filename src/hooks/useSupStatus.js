@@ -1,7 +1,20 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 
 const SUP_DURATION_HOURS = 2
+
+/**
+ * Parse location from PostGIS POINT format
+ */
+function parseLocation(pointStr) {
+  if (!pointStr) return null
+  const match = pointStr.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/) ||
+                pointStr.match(/\(([-\d.]+),([-\d.]+)\)/)
+  if (match) {
+    return { lng: parseFloat(match[1]), lat: parseFloat(match[2]) }
+  }
+  return null
+}
 
 /**
  * Hook for managing Sup status and realtime updates
@@ -15,6 +28,14 @@ export function useSupStatus(userId, friendIds = []) {
   const [friendSessions, setFriendSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  // Stabilize friendIds — prevent infinite re-renders from new array references
+  const friendIdsKey = JSON.stringify(friendIds)
+  const stableFriendIds = useMemo(() => friendIds, [friendIdsKey])
+
+  // Keep a ref for use in realtime callback (avoids stale closure)
+  const stableFriendIdsRef = useRef(stableFriendIds)
+  useEffect(() => { stableFriendIdsRef.current = stableFriendIds }, [stableFriendIds])
 
   // Fetch current user's sup status
   const fetchMyStatus = useCallback(async () => {
@@ -49,7 +70,7 @@ export function useSupStatus(userId, friendIds = []) {
 
   // Fetch friends' sup statuses
   const fetchFriendSessions = useCallback(async () => {
-    if (!friendIds.length) {
+    if (!stableFriendIds.length) {
       setFriendSessions([])
       return
     }
@@ -61,7 +82,7 @@ export function useSupStatus(userId, friendIds = []) {
           *,
           user:users(id, username)
         `)
-        .in('user_id', friendIds)
+        .in('user_id', stableFriendIds)
         .gt('expires_at', new Date().toISOString())
 
       if (fetchError) throw fetchError
@@ -71,7 +92,7 @@ export function useSupStatus(userId, friendIds = []) {
       console.error('Error fetching friend sessions:', err)
       setError(err.message)
     }
-  }, [friendIds])
+  }, [stableFriendIds])
 
   // Go Sup - create a new sup session
   const goSup = useCallback(async (location) => {
@@ -167,8 +188,13 @@ export function useSupStatus(userId, friendIds = []) {
   useEffect(() => {
     const init = async () => {
       setLoading(true)
-      await Promise.all([fetchMyStatus(), fetchFriendSessions()])
-      setLoading(false)
+      try {
+        await Promise.all([fetchMyStatus(), fetchFriendSessions()])
+      } catch (err) {
+        console.error('Error initializing sup status:', err)
+      } finally {
+        setLoading(false)
+      }
     }
     init()
   }, [fetchMyStatus, fetchFriendSessions])
@@ -176,8 +202,6 @@ export function useSupStatus(userId, friendIds = []) {
   // Set up realtime subscription for sup sessions
   useEffect(() => {
     if (!userId) return
-
-    const allUserIds = [userId, ...friendIds]
 
     const channelName = `sup-sessions-${userId}`
     const subscription = supabase
@@ -190,13 +214,13 @@ export function useSupStatus(userId, friendIds = []) {
           table: 'sup_sessions'
         },
         (payload) => {
-          // Check if this change is relevant to us
           const affectedUserId = payload.new?.user_id || payload.old?.user_id
+          const allUserIds = [userId, ...stableFriendIdsRef.current]
           if (allUserIds.includes(affectedUserId)) {
             if (affectedUserId === userId) {
-              fetchMyStatus()
+              fetchMyStatus().catch(() => {})
             } else {
-              fetchFriendSessions()
+              fetchFriendSessions().catch(() => {})
             }
           }
         }
@@ -206,27 +230,21 @@ export function useSupStatus(userId, friendIds = []) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [userId, friendIds, fetchMyStatus, fetchFriendSessions])
+  }, [userId, fetchMyStatus, fetchFriendSessions])
 
-  // Parse location from PostGIS POINT format
-  const parseLocation = (pointStr) => {
-    if (!pointStr) return null
-    // Format: POINT(lng lat) or (lng,lat)
-    const match = pointStr.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/) ||
-                  pointStr.match(/\(([-\d.]+),([-\d.]+)\)/)
-    if (match) {
-      return { lng: parseFloat(match[1]), lat: parseFloat(match[2]) }
-    }
-    return null
-  }
+  // Memoize derived values
+  const friendSessionsWithLocations = useMemo(
+    () => friendSessions.map(session => ({
+      ...session,
+      parsedLocation: parseLocation(session.location)
+    })),
+    [friendSessions]
+  )
 
-  // Get friend sessions with parsed locations
-  const friendSessionsWithLocations = friendSessions.map(session => ({
-    ...session,
-    parsedLocation: parseLocation(session.location)
-  }))
-
-  const myParsedLocation = mySession ? parseLocation(mySession.location) : null
+  const myParsedLocation = useMemo(
+    () => mySession ? parseLocation(mySession.location) : null,
+    [mySession]
+  )
 
   return {
     isSupActive,

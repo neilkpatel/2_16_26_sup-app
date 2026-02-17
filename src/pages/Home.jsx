@@ -177,9 +177,9 @@ export function Home() {
 
           {isSupActive && (
             <p className="sup-status">
-              You're Sup! {activeFriends.length > 0
-                ? `${activeFriends.length} in your squad also free`
-                : 'Waiting for your squad...'}
+              {activeFriends.length > 0
+                ? `${activeFriends.length} in your squad also free — check the map!`
+                : 'Your squad has been notified. Hang tight!'}
             </p>
           )}
         </div>

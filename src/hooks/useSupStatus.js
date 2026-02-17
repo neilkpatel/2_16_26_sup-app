@@ -262,6 +262,17 @@ export function useSupStatus(userId, friendIds = []) {
     }
   }, [userId, fetchMyStatus, fetchFriendSessions])
 
+  // Poll for friend sessions while Sup is active (Realtime can be unreliable on mobile)
+  useEffect(() => {
+    if (!isSupActive || !stableFriendIds.length) return
+
+    const interval = setInterval(() => {
+      fetchFriendSessions().catch(() => {})
+    }, 5000)
+
+    return () => clearInterval(interval)
+  }, [isSupActive, stableFriendIds, fetchFriendSessions])
+
   // Memoize derived values
   const friendSessionsWithLocations = useMemo(
     () => friendSessions.map(session => ({

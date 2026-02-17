@@ -39,10 +39,28 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDes
       }
     })
 
-    return bars.map(bar => {
+    const tagged = bars.map(bar => {
       const headingUsers = destMap[bar.name]
       return headingUsers ? { ...bar, _pinnedBy: headingUsers } : bar
     })
+
+    // Find the bar with the most people heading there
+    let maxCount = 0
+    let topBarName = null
+    tagged.forEach(bar => {
+      const count = bar._pinnedBy ? bar._pinnedBy.length : 0
+      if (count > maxCount) {
+        maxCount = count
+        topBarName = bar.name
+      }
+    })
+
+    if (topBarName && maxCount >= 2) {
+      return tagged.map(bar =>
+        bar.name === topBarName ? { ...bar, _isTopPick: true } : bar
+      )
+    }
+    return tagged
   }, [bars, friendDestinations])
 
   if (loading) {
@@ -89,7 +107,7 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDes
               {index + 1}
             </div>
             <div className="bar-info">
-              <h4 className="bar-name">{bar.name}</h4>
+              <h4 className="bar-name">{bar.name}{bar._isTopPick && <span className="bar-trophy"> 🏆</span>}</h4>
               {bar._pinnedBy && (
                 <span className="bar-pinned-badge">
                   @{bar._pinnedBy.join(', @')} heading here

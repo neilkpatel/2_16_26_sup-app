@@ -37,8 +37,11 @@ serve(async (req) => {
     const response = await fetch(url.toString());
     const data = await response.json();
 
-    // Return top 3 results
-    const places = (data.results || []).slice(0, 3).map((place: any) => ({
+    // Filter to 4.2+ stars, return top 3
+    const places = (data.results || [])
+      .filter((place: any) => (place.rating || 0) >= 4.2)
+      .slice(0, 3)
+      .map((place: any) => ({
       id: place.place_id,
       name: place.name,
       address: place.vicinity,

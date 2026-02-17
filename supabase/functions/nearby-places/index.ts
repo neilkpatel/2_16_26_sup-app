@@ -44,14 +44,21 @@ serve(async (req) => {
     url.searchParams.set("location", `${lat},${lng}`);
     url.searchParams.set("radius", radius.toString());
     url.searchParams.set("type", "bar");
+    url.searchParams.set("keyword", "cocktail bar lounge");
     url.searchParams.set("key", apiKey);
 
     const response = await fetch(url.toString());
     const data = await response.json();
 
-    // Filter to 4.2+ stars, compute distance, sort by closest, return top 5
+    // Filter: 4.2+ stars, exclude restaurants that aren't primarily bars
     const places = (data.results || [])
-      .filter((place: any) => (place.rating || 0) >= 4.2)
+      .filter((place: any) => {
+        if ((place.rating || 0) < 4.2) return false;
+        const types: string[] = place.types || [];
+        // Exclude places that are restaurants but not bars
+        if (types.includes("restaurant") && !types.includes("bar") && !types.includes("night_club")) return false;
+        return true;
+      })
       .map((place: any) => {
         const plat = place.geometry.location.lat;
         const plng = place.geometry.location.lng;

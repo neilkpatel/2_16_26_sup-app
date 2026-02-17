@@ -4,10 +4,40 @@ import { supabase } from '../lib/supabase'
 const SUP_DURATION_HOURS = 2
 
 /**
- * Parse location from PostGIS POINT format
+ * Parse a 64-bit double from hex string
+ */
+function hexToDouble(hex, littleEndian) {
+  const bytes = hex.match(/../g).map(b => parseInt(b, 16))
+  if (littleEndian) bytes.reverse()
+  const buffer = new ArrayBuffer(8)
+  const view = new DataView(buffer)
+  bytes.forEach((b, i) => view.setUint8(i, b))
+  return view.getFloat64(0)
+}
+
+/**
+ * Parse location from PostGIS format — handles both:
+ * - WKB hex: "0101000020E61000005C5DD0CCA67F52C0E260C270615E4440"
+ * - Text: "POINT(lng lat)" or "(lng,lat)"
  */
 function parseLocation(pointStr) {
   if (!pointStr) return null
+
+  // Try WKB hex format (PostGIS default output for geography columns)
+  if (/^[0-9a-fA-F]+$/.test(pointStr) && pointStr.length >= 42) {
+    const le = pointStr.substring(0, 2) === '01'
+    let offset = 10 // skip byte order (2) + type (8)
+    // Check SRID flag (0x20000000) in type field
+    const typeHex = pointStr.substring(2, 10)
+    const typeBytes = typeHex.match(/../g)
+    const typeVal = parseInt((le ? [...typeBytes].reverse() : typeBytes).join(''), 16)
+    if (typeVal & 0x20000000) offset += 8 // skip SRID
+    const lng = hexToDouble(pointStr.substring(offset, offset + 16), le)
+    const lat = hexToDouble(pointStr.substring(offset + 16, offset + 32), le)
+    if (isFinite(lng) && isFinite(lat)) return { lng, lat }
+  }
+
+  // Try text formats
   const match = pointStr.match(/POINT\(([-\d.]+)\s+([-\d.]+)\)/) ||
                 pointStr.match(/\(([-\d.]+),([-\d.]+)\)/)
   if (match) {

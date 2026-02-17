@@ -1,7 +1,15 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import './Login.css'
+
+function shouldShowInstall() {
+  if (typeof navigator === 'undefined') return false
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+    || navigator.standalone === true
+  return isIOS && !isStandalone
+}
 
 export function Login() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -46,8 +54,42 @@ export function Login() {
     }
   }
 
+  const [showInstall, setShowInstall] = useState(false)
+
+  useEffect(() => {
+    setShowInstall(shouldShowInstall())
+  }, [])
+
   return (
     <div className="login-container">
+      {showInstall && (
+        <div className="install-hero">
+          <div className="install-hero-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+          </div>
+          <p className="install-hero-title">Add Sup to your Home Screen</p>
+          <div className="install-hero-steps">
+            <div className="install-step">
+              <span className="install-step-num">1</span>
+              <span>Tap the <strong>Share</strong> button <span className="install-share-icon">↑</span> at the bottom of Safari</span>
+            </div>
+            <div className="install-step">
+              <span className="install-step-num">2</span>
+              <span>Scroll down and tap <strong>Add to Home Screen</strong></span>
+            </div>
+            <div className="install-step">
+              <span className="install-step-num">3</span>
+              <span>Tap <strong>Add</strong> — then open Sup from your home screen</span>
+            </div>
+          </div>
+          <p className="install-hero-why">Required for push notifications and full-screen mode</p>
+          <button className="install-hero-dismiss" onClick={() => setShowInstall(false)}>I'll do it later</button>
+        </div>
+      )}
       <div className="login-card">
         <img src="/logo.png" alt="Sup" className="login-logo" />
         <h1 className="login-title">Sup</h1>

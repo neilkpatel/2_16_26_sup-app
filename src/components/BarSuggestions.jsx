@@ -28,38 +28,21 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDes
     fetchBars()
   }, [location?.lat, location?.lng])
 
-  // Build display list: pin friend destinations to top
+  // Tag bars that friends are heading to (keep in natural order)
   const displayBars = useMemo(() => {
     if (!friendDestinations.length) return bars
 
-    // Collect unique friend destinations
-    const pinned = []
-    const pinnedNames = new Set()
+    const destMap = {}
     friendDestinations.forEach(fd => {
-      if (!pinnedNames.has(fd.name)) {
-        pinnedNames.add(fd.name)
-        // Check if this bar exists in our search results
-        const existing = bars.find(b => b.name === fd.name)
-        pinned.push({
-          ...(existing || {
-            id: `dest-${fd.name}`,
-            name: fd.name,
-            address: '',
-            location: fd.location,
-            rating: null,
-            priceLevel: null,
-            walkMinutes: null,
-            isOpen: null
-          }),
-          _pinnedBy: fd.usernames
-        })
+      if (!destMap[fd.name]) {
+        destMap[fd.name] = fd.usernames
       }
     })
 
-    // Remove pinned bars from regular list to avoid duplicates
-    const rest = bars.filter(b => !pinnedNames.has(b.name))
-
-    return [...pinned, ...rest]
+    return bars.map(bar => {
+      const headingUsers = destMap[bar.name]
+      return headingUsers ? { ...bar, _pinnedBy: headingUsers } : bar
+    })
   }, [bars, friendDestinations])
 
   if (loading) {
@@ -103,7 +86,7 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDes
             style={{ cursor: onSelectBar ? 'pointer' : 'default' }}
           >
             <div className={`bar-rank ${bar._pinnedBy ? 'bar-rank-pinned' : ''}`}>
-              {bar._pinnedBy ? '!' : index + 1}
+              {index + 1}
             </div>
             <div className="bar-info">
               <h4 className="bar-name">{bar.name}</h4>

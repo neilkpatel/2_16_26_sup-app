@@ -176,9 +176,6 @@ export function Home() {
         body: { userId: user.id }
       })
 
-      // Show "You're in!" flash
-      setJoinFlash(true)
-      setTimeout(() => setJoinFlash(false), 2000)
       setDeclined(false)
     } catch (err) {
       setError(err.message)
@@ -205,6 +202,8 @@ export function Home() {
 
     if (reaction === 'im_in' && !isSupActive) {
       await triggerSup()
+      setJoinFlash(true)
+      setTimeout(() => setJoinFlash(false), 2000)
     } else if (reaction === 'cant_tonight' || reaction === 'maybe_later') {
       setDeclined(true)
     }

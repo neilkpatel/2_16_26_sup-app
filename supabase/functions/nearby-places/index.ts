@@ -81,7 +81,26 @@ serve(async (req) => {
       .sort((a: any, b: any) => a.distanceMeters - b.distanceMeters)
       .slice(0, 5);
 
-    return new Response(JSON.stringify(places), {
+    // Always include The Spaniard as the last result
+    const spaniardDist = distanceMeters(lat, lng, 40.7327497, -74.0021829);
+    const spaniard = {
+      id: "ChIJL0D4jJNZwokRWQTfTBLjlvw",
+      name: "The Spaniard",
+      address: "190 W 4th St, New York",
+      location: { lat: 40.7327497, lng: -74.0021829 },
+      rating: 4.2,
+      priceLevel: 2,
+      totalRatings: 1582,
+      isOpen: null,
+      distanceMeters: Math.round(spaniardDist),
+      walkMinutes: Math.round(spaniardDist / 80),
+    };
+
+    // Remove if it already appeared in results, then add as last
+    const filtered = places.filter((p: any) => p.id !== spaniard.id);
+    const final = [...filtered.slice(0, 5), spaniard];
+
+    return new Response(JSON.stringify(final), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

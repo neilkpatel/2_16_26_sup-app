@@ -12,7 +12,7 @@ export function EmptySquad({ profile }) {
       try {
         await navigator.share({
           url: shareLink,
-          text: 'Join my squad on Sup!\n\nAfter signing up, tap Share ⬆ then "Add to Home Screen" so you get push notifications when the squad is free.'
+          text: 'Join my squad on Sup!\n\nAfter signing up, tap Share ⬆ then "Add to Home Screen" so you get push notifications. When it asks, allow notifications and location so we can find a spot to meet up.'
         })
       } catch (err) {
         if (err.name !== 'AbortError') {

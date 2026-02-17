@@ -1,48 +1,46 @@
 .install-prompt {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  background: white;
-  border-radius: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
   padding: 1rem;
-  margin: 0.75rem 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 0;
 }
 
 .install-prompt-content {
-  flex: 1;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.install-prompt-title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .install-prompt-text {
   margin: 0 0 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #333;
+  font-size: 0.85rem;
+  opacity: 0.95;
 }
 
-.install-prompt-instructions {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #666;
+.install-prompt-steps {
+  margin: 0 0 0.75rem;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  line-height: 1.8;
+}
+
+.install-prompt-steps strong {
+  font-weight: 700;
 }
 
 .install-prompt-icon {
   display: inline-block;
-  font-size: 1rem;
-  color: #667eea;
+  font-size: 0.9rem;
 }
 
-.install-prompt-dismiss {
-  background: none;
-  border: none;
-  font-size: 1.25rem;
-  color: #999;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.install-prompt-dismiss:hover {
-  color: #666;
+.install-prompt-note {
+  margin: 0;
+  font-size: 0.8rem;
+  opacity: 0.9;
+  line-height: 1.5;
 }

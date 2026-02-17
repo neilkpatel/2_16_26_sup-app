@@ -138,6 +138,17 @@ export function Home() {
 
         <InstallPrompt />
 
+        {!isSupActive && activeFriends.length > 0 && (
+          <div className="active-friends-banner">
+            <span>
+              {activeFriends.length === 1
+                ? `@${activeFriends[0].username} is free to hang!`
+                : `${activeFriends.map(f => `@${f.username}`).join(', ')} are free to hang!`}
+            </span>
+            <span className="active-friends-cta">Tap Sup to join</span>
+          </div>
+        )}
+
         {showFriends && (
           <div className="friends-panel">
             <FriendsList

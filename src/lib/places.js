@@ -1,36 +1,22 @@
-const GOOGLE_PLACES_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY
+import { supabase } from './supabase'
 
 /**
- * Search for nearby bars/venues using Google Places API
+ * Search for nearby bars/venues via Supabase Edge Function
+ * (proxies Google Places API to avoid CORS and keep API key server-side)
  * @param {{lat: number, lng: number}} location - Center point for search
  * @param {number} radius - Search radius in meters (default 1500)
  * @returns {Promise<Array>} Array of place objects
  */
 export async function searchNearbyBars(location, radius = 1500) {
-  if (!GOOGLE_PLACES_API_KEY) {
-    console.warn('Google Places API key not configured')
-    return getMockBars(location)
-  }
-
   try {
-    // Using the Places API Nearby Search
-    const url = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json')
-    url.searchParams.set('location', `${location.lat},${location.lng}`)
-    url.searchParams.set('radius', radius.toString())
-    url.searchParams.set('type', 'bar')
-    url.searchParams.set('key', GOOGLE_PLACES_API_KEY)
+    const { data, error } = await supabase.functions.invoke('nearby-places', {
+      body: { lat: location.lat, lng: location.lng, radius }
+    })
 
-    // Note: In production, this should go through a backend proxy
-    // to avoid exposing the API key
-    const response = await fetch(url.toString())
-    const data = await response.json()
+    if (error) throw error
+    if (Array.isArray(data) && data.length > 0) return data
 
-    if (data.status !== 'OK') {
-      console.error('Places API error:', data.status)
-      return getMockBars(location)
-    }
-
-    return parsePlacesResponse(data.results).slice(0, 3)
+    return getMockBars(location)
   } catch (error) {
     console.error('Error fetching places:', error)
     return getMockBars(location)

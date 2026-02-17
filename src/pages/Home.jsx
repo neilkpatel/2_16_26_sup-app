@@ -186,12 +186,14 @@ export function Home() {
             activeCount={activeFriends.length}
           />
 
-          {isSupActive && (
+          {isSupActive ? (
             <p className="sup-status">
               {activeFriends.length > 0
                 ? `${activeFriends.length} in your squad also free — check the map!`
                 : 'Your squad has been notified. Hang tight!'}
             </p>
+          ) : activeFriends.length === 0 && (
+            <p className="sup-cta">Tap Sup to see who wants to hang</p>
           )}
         </div>
       </main>

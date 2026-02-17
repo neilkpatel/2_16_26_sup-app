@@ -60,6 +60,15 @@
   background: #f0f0f0;
 }
 
+.bar-card-featured {
+  background: #f0faf4;
+  border: 1px solid #bbf0d0;
+}
+
+.bar-card-featured:hover {
+  background: #e5f5ec;
+}
+
 .bar-rank {
   width: 28px;
   height: 28px;

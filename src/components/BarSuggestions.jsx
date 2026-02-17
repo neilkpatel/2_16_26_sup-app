@@ -62,7 +62,7 @@ export function BarSuggestions({ location }) {
       <h3>Suggested meetup spots</h3>
       <div className="bars-list">
         {bars.map((bar, index) => (
-          <div key={bar.id} className="bar-card">
+          <div key={bar.id} className={`bar-card ${bar.id === 'ChIJL0D4jJNZwokRWQTfTBLjlvw' ? 'bar-card-featured' : ''}`}>
             <div className="bar-rank">{index + 1}</div>
             <div className="bar-info">
               <h4 className="bar-name">{bar.name}</h4>

@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
 import AddFriend from './pages/AddFriend'
+import { OnboardingGate } from './components/OnboardingGate'
 import './App.css'
 
 // Error boundary to prevent white screens
@@ -56,7 +57,7 @@ function ProtectedRoute({ children }) {
     return <Navigate to="/login" replace />
   }
 
-  return children
+  return <OnboardingGate userId={user.id}>{children}</OnboardingGate>
 }
 
 // Public route - redirects to home if already logged in

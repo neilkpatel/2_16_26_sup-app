@@ -139,56 +139,85 @@
   border: none !important;
 }
 
+/* --- Core dot --- */
 .radar-core {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow:
-    0 0 12px rgba(102, 126, 234, 0.8),
-    0 0 24px rgba(102, 126, 234, 0.4);
   z-index: 4;
-  animation: radar-core-glow 2s ease-in-out infinite;
+  transition: width 0.4s, height 0.4s, box-shadow 0.4s;
+  box-shadow:
+    0 0 8px rgba(102, 126, 234, 0.4),
+    0 0 16px rgba(102, 126, 234, 0.2);
+  animation: radar-core-idle 3s ease-in-out infinite;
 }
 
+/* Active / broadcasting core — bigger, brighter */
+.radar-core.broadcasting {
+  width: 18px;
+  height: 18px;
+  box-shadow:
+    0 0 14px rgba(102, 126, 234, 0.9),
+    0 0 28px rgba(102, 126, 234, 0.5);
+  animation: radar-core-active 1.5s ease-in-out infinite;
+}
+
+/* Heading state */
 .radar-core.heading {
   background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
   box-shadow:
-    0 0 12px rgba(14, 165, 233, 0.8),
-    0 0 24px rgba(14, 165, 233, 0.4);
-  animation: radar-core-glow-heading 2s ease-in-out infinite;
+    0 0 14px rgba(14, 165, 233, 0.9),
+    0 0 28px rgba(14, 165, 233, 0.5);
+  animation: radar-core-heading 1.5s ease-in-out infinite;
 }
 
-@keyframes radar-core-glow {
+/* Idle: gentle subtle throb */
+@keyframes radar-core-idle {
   0%, 100% {
     box-shadow:
-      0 0 12px rgba(102, 126, 234, 0.8),
-      0 0 24px rgba(102, 126, 234, 0.4);
+      0 0 8px rgba(102, 126, 234, 0.4),
+      0 0 16px rgba(102, 126, 234, 0.2);
   }
   50% {
     box-shadow:
-      0 0 18px rgba(102, 126, 234, 1),
-      0 0 36px rgba(102, 126, 234, 0.6);
+      0 0 12px rgba(102, 126, 234, 0.6),
+      0 0 20px rgba(102, 126, 234, 0.3);
   }
 }
 
-@keyframes radar-core-glow-heading {
+/* Active: intense pulsing glow */
+@keyframes radar-core-active {
   0%, 100% {
     box-shadow:
-      0 0 12px rgba(14, 165, 233, 0.8),
-      0 0 24px rgba(14, 165, 233, 0.4);
+      0 0 14px rgba(102, 126, 234, 0.9),
+      0 0 28px rgba(102, 126, 234, 0.5);
   }
   50% {
     box-shadow:
-      0 0 18px rgba(14, 165, 233, 1),
-      0 0 36px rgba(14, 165, 233, 0.6);
+      0 0 22px rgba(102, 126, 234, 1),
+      0 0 44px rgba(102, 126, 234, 0.7);
   }
 }
 
+@keyframes radar-core-heading {
+  0%, 100% {
+    box-shadow:
+      0 0 14px rgba(14, 165, 233, 0.9),
+      0 0 28px rgba(14, 165, 233, 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 22px rgba(14, 165, 233, 1),
+      0 0 44px rgba(14, 165, 233, 0.7);
+  }
+}
+
+/* --- Rings --- */
 .radar-ring {
   position: absolute;
   top: 50%;
@@ -196,7 +225,6 @@
   transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 2px solid rgba(102, 126, 234, 0.6);
-  animation: radar-ping 3s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
 .radar-beacon.heading .radar-ring {
@@ -204,28 +232,52 @@
 }
 
 .radar-ring-1 {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   animation-delay: 0s;
 }
 
 .radar-ring-2 {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   animation-delay: 1s;
 }
 
 .radar-ring-3 {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   animation-delay: 2s;
 }
 
-@keyframes radar-ping {
+/* Idle: single slow ring */
+.radar-beacon.idle .radar-ring {
+  border-color: rgba(102, 126, 234, 0.35);
+  animation: radar-ping-idle 4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Active: fast multi-ring sonar */
+.radar-beacon.active .radar-ring {
+  animation: radar-ping-active 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes radar-ping-idle {
   0% {
-    width: 16px;
-    height: 16px;
-    opacity: 0.7;
+    width: 14px;
+    height: 14px;
+    opacity: 0.5;
+  }
+  100% {
+    width: 60px;
+    height: 60px;
+    opacity: 0;
+  }
+}
+
+@keyframes radar-ping-active {
+  0% {
+    width: 14px;
+    height: 14px;
+    opacity: 0.8;
   }
   100% {
     width: 80px;

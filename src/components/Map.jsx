@@ -30,13 +30,11 @@ const createIcon = (color, label, extraClass = '') => {
 
 const HEADING_COLOR = '#0ea5e9'
 
-// Radar beacon for user location
-const radarBeaconIcon = L.divIcon({
-  className: 'radar-beacon',
+// Radar beacon for user location — idle (passive) and active (broadcasting)
+const radarBeaconIdleIcon = L.divIcon({
+  className: 'radar-beacon idle',
   html: `
     <div class="radar-ring radar-ring-1"></div>
-    <div class="radar-ring radar-ring-2"></div>
-    <div class="radar-ring radar-ring-3"></div>
     <div class="radar-core"></div>
   `,
   iconSize: [80, 80],
@@ -44,13 +42,26 @@ const radarBeaconIcon = L.divIcon({
   popupAnchor: [0, -20]
 })
 
-const radarBeaconHeadingIcon = L.divIcon({
-  className: 'radar-beacon heading',
+const radarBeaconIcon = L.divIcon({
+  className: 'radar-beacon active',
   html: `
     <div class="radar-ring radar-ring-1"></div>
     <div class="radar-ring radar-ring-2"></div>
     <div class="radar-ring radar-ring-3"></div>
-    <div class="radar-core heading"></div>
+    <div class="radar-core broadcasting"></div>
+  `,
+  iconSize: [80, 80],
+  iconAnchor: [40, 40],
+  popupAnchor: [0, -20]
+})
+
+const radarBeaconHeadingIcon = L.divIcon({
+  className: 'radar-beacon active heading',
+  html: `
+    <div class="radar-ring radar-ring-1"></div>
+    <div class="radar-ring radar-ring-2"></div>
+    <div class="radar-ring radar-ring-3"></div>
+    <div class="radar-core broadcasting heading"></div>
   `,
   iconSize: [80, 80],
   iconAnchor: [40, 40],
@@ -202,19 +213,23 @@ export function Map({
 
         <MapUpdater center={center} shouldCenter={shouldCenter} />
 
-        {/* Current user marker */}
-        {userLocation && isSupActive && (
+        {/* Current user marker — always visible, intensifies when Sup'd */}
+        {userLocation && (
           <AnimatedMarker
             position={[userLocation.lat, userLocation.lng]}
-            icon={myDestination ? radarBeaconHeadingIcon : radarBeaconIcon}
+            icon={
+              isSupActive
+                ? (myDestination ? radarBeaconHeadingIcon : radarBeaconIcon)
+                : radarBeaconIdleIcon
+            }
             sessionId="user"
           >
             <Popup>
               <strong>You</strong>
               <br />
-              {myDestination
-                ? `Heading to ${myDestination.name}`
-                : 'Broadcasting...'}
+              {isSupActive
+                ? (myDestination ? `Heading to ${myDestination.name}` : 'Broadcasting...')
+                : 'Tap Sup to broadcast'}
             </Popup>
           </AnimatedMarker>
         )}

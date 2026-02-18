@@ -96,8 +96,10 @@
 }
 
 .map-container {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 300px;
+  position: relative;
+  overflow: hidden;
 }
 
 .suggestions-container {

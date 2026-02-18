@@ -28,29 +28,39 @@ export function useOnboardingGate() {
     return () => mq.removeEventListener('change', handler)
   }, [])
 
-  // Check location permission via Permissions API (with iOS fallback)
+  // Check location permission via Permissions API, with iOS fallback
   useEffect(() => {
-    if (!navigator.permissions) {
-      // iOS Safari doesn't support Permissions API — default to 'prompt'
-      setLocationPermission('prompt')
-      return
+    if (navigator.permissions) {
+      let permStatus
+      navigator.permissions.query({ name: 'geolocation' }).then((status) => {
+        permStatus = status
+        setLocationPermission(status.state)
+        status.addEventListener('change', () => {
+          setLocationPermission(status.state)
+        })
+      }).catch(() => {
+        // Permissions API failed — try silent geolocation probe
+        probeLocation()
+      })
+      return () => {
+        if (permStatus) {
+          permStatus.removeEventListener('change', () => {})
+        }
+      }
+    } else {
+      // iOS Safari: no Permissions API — silently try to get position
+      probeLocation()
     }
 
-    let permStatus
-    navigator.permissions.query({ name: 'geolocation' }).then((status) => {
-      permStatus = status
-      setLocationPermission(status.state)
-      status.addEventListener('change', () => {
-        setLocationPermission(status.state)
-      })
-    }).catch(() => {
-      setLocationPermission('prompt')
-    })
-
-    return () => {
-      if (permStatus) {
-        permStatus.removeEventListener('change', () => {})
-      }
+    function probeLocation() {
+      navigator.geolocation.getCurrentPosition(
+        () => setLocationPermission('granted'),
+        (err) => {
+          if (err.code === 1) setLocationPermission('denied')
+          // Timeout/unavailable — don't block, assume prompt
+        },
+        { timeout: 3000 }
+      )
     }
   }, [])
 

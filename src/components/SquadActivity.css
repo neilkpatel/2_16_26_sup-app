@@ -1,12 +1,12 @@
 .squad-activity {
   padding: 1rem;
-  background: white;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .squad-activity h3 {
   margin: 0 0 0.75rem;
   font-size: 0.85rem;
-  color: #999;
+  color: rgba(255, 255, 255, 0.35);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -28,8 +28,8 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #f0f0f0;
-  color: #666;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,10 +40,10 @@
 
 .activity-text {
   font-size: 0.85rem;
-  color: #555;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .activity-text strong {
-  color: #333;
+  color: rgba(255, 255, 255, 0.85);
   font-weight: 600;
 }

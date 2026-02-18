@@ -2,16 +2,16 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: #1a1a2e;
 }
 
 .home-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 100;
 }
 
@@ -22,10 +22,6 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .logo-icon {
@@ -34,30 +30,26 @@
   border-radius: 8px;
 }
 
-.tagline {
-  font-weight: 400;
-  font-size: 0.85rem;
-}
-
 .nav-links {
   display: flex;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .nav-button {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 2rem;
   font-size: 0.875rem;
-  color: #333;
+  color: rgba(255, 255, 255, 0.85);
   cursor: pointer;
   text-decoration: none;
   transition: background 0.2s;
 }
 
 .nav-button:hover {
-  background: #e0e0e0;
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .nav-button.invite-btn {
@@ -67,6 +59,19 @@
 
 .nav-button.invite-btn:hover {
   opacity: 0.9;
+}
+
+.nav-button.profile-avatar {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
 .home-main {
@@ -83,9 +88,9 @@
   right: 0;
   width: 300px;
   max-height: 50vh;
-  background: white;
+  background: #242442;
   border-radius: 0 0 0 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
   z-index: 50;
   overflow: hidden;
 }
@@ -98,19 +103,20 @@
 
 .suggestions-container {
   padding: 1rem;
-  background: white;
+  background: #242442;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .sup-status-card {
   padding: 1rem;
-  background: white;
-  border-top: 1px solid #eee;
+  background: rgba(255, 255, 255, 0.04);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   text-align: center;
 }
 
 .error-toast {
-  background: #fee;
-  color: #c00;
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   margin: 0.5rem 1rem;
@@ -119,14 +125,14 @@
 
 .sup-status {
   margin: 0;
-  color: #666;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.875rem;
 }
 
 .sup-cta {
   margin: 0;
   padding: 1rem;
-  color: #999;
+  color: rgba(255, 255, 255, 0.45);
   font-size: 0.875rem;
   text-align: center;
 }
@@ -134,7 +140,7 @@
 .sup-countdown {
   margin: 0.35rem 0 0;
   font-size: 0.8rem;
-  color: #999;
+  color: rgba(255, 255, 255, 0.4);
   font-variant-numeric: tabular-nums;
 }
 
@@ -142,7 +148,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  background: #22c55e;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: white;
   padding: 0.75rem 1rem;
   font-size: 0.9rem;
@@ -171,7 +177,7 @@
 .friend-destination-status {
   margin: 0.25rem 0 0;
   font-size: 0.8rem;
-  color: #0ea5e9;
+  color: #38bdf8;
   font-weight: 600;
 }
 
@@ -237,7 +243,7 @@
 .sup-declined-text {
   margin: 0;
   padding: 1rem;
-  color: #999;
+  color: rgba(255, 255, 255, 0.4);
   font-size: 0.8rem;
   font-style: italic;
   text-align: center;
@@ -257,6 +263,12 @@
 
   .nav-button {
     padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .nav-button.profile-avatar {
+    width: 30px;
+    height: 30px;
     font-size: 0.8rem;
   }
 }

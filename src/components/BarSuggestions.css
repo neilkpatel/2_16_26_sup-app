@@ -5,7 +5,7 @@
 .bar-suggestions h3 {
   margin: 0 0 0.75rem;
   font-size: 0.875rem;
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
   font-weight: 500;
 }
 
@@ -17,7 +17,7 @@
 
 .bar-skeleton {
   height: 60px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
   border-radius: 0.5rem;
@@ -35,7 +35,7 @@
 .bars-error,
 .bars-empty {
   text-align: center;
-  color: #888;
+  color: rgba(255, 255, 255, 0.4);
   padding: 1rem;
   font-size: 0.875rem;
 }
@@ -51,46 +51,46 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem;
-  background: #f9f9f9;
+  background: rgba(255, 255, 255, 0.06);
   border-radius: 0.5rem;
   transition: background 0.2s;
 }
 
 .bar-card:hover {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .bar-card-featured {
-  background: #f0faf4;
-  border: 1px solid #bbf0d0;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
 }
 
 .bar-card-featured:hover {
-  background: #e5f5ec;
+  background: rgba(34, 197, 94, 0.15);
 }
 
 .bar-card-selected {
-  background: #eff6ff;
-  border: 2px solid #0ea5e9;
+  background: rgba(14, 165, 233, 0.1);
+  border: 2px solid rgba(14, 165, 233, 0.4);
 }
 
 .bar-card-selected:hover {
-  background: #e0f2fe;
+  background: rgba(14, 165, 233, 0.15);
 }
 
 .bar-card-pinned {
-  background: #eff6ff;
-  border: 2px solid #0ea5e9;
+  background: rgba(14, 165, 233, 0.1);
+  border: 2px solid rgba(14, 165, 233, 0.4);
   animation: pinned-glow 2s ease-in-out infinite alternate;
 }
 
 .bar-card-pinned:hover {
-  background: #e0f2fe;
+  background: rgba(14, 165, 233, 0.15);
 }
 
 @keyframes pinned-glow {
   from { box-shadow: 0 0 0 rgba(14, 165, 233, 0); }
-  to { box-shadow: 0 0 12px rgba(14, 165, 233, 0.25); }
+  to { box-shadow: 0 0 12px rgba(14, 165, 233, 0.2); }
 }
 
 .bar-rank-pinned {
@@ -113,8 +113,8 @@
   display: inline-block;
   font-size: 0.7rem;
   font-weight: 600;
-  color: #0ea5e9;
-  background: #e0f2fe;
+  color: #38bdf8;
+  background: rgba(14, 165, 233, 0.15);
   padding: 0.15rem 0.5rem;
   border-radius: 1rem;
   margin-bottom: 0.125rem;
@@ -143,6 +143,7 @@
   margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
+  color: white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -151,7 +152,7 @@
 .bar-address {
   margin: 0.125rem 0 0;
   font-size: 0.75rem;
-  color: #888;
+  color: rgba(255, 255, 255, 0.4);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -165,12 +166,12 @@
 }
 
 .bar-walk {
-  color: #667eea;
+  color: #818cf8;
   font-weight: 600;
 }
 
 .bar-rating {
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .bar-rating .star {
@@ -178,12 +179,12 @@
 }
 
 .rating-count {
-  color: #999;
+  color: rgba(255, 255, 255, 0.35);
   margin-left: 0.125rem;
 }
 
 .bar-price {
-  color: #22c55e;
+  color: #4ade80;
   font-weight: 500;
 }
 
@@ -192,11 +193,11 @@
 }
 
 .bar-open.open {
-  color: #22c55e;
+  color: #4ade80;
 }
 
 .bar-open.closed {
-  color: #ef4444;
+  color: #f87171;
 }
 
 .bar-directions {

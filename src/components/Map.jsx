@@ -30,8 +30,32 @@ const createIcon = (color, label, extraClass = '') => {
 
 const HEADING_COLOR = '#0ea5e9'
 
-const userIcon = createIcon('#667eea', 'You')
-const userHeadingIcon = createIcon(HEADING_COLOR, 'You', 'marker-heading')
+// Radar beacon for user location
+const radarBeaconIcon = L.divIcon({
+  className: 'radar-beacon',
+  html: `
+    <div class="radar-ring radar-ring-1"></div>
+    <div class="radar-ring radar-ring-2"></div>
+    <div class="radar-ring radar-ring-3"></div>
+    <div class="radar-core"></div>
+  `,
+  iconSize: [80, 80],
+  iconAnchor: [40, 40],
+  popupAnchor: [0, -20]
+})
+
+const radarBeaconHeadingIcon = L.divIcon({
+  className: 'radar-beacon heading',
+  html: `
+    <div class="radar-ring radar-ring-1"></div>
+    <div class="radar-ring radar-ring-2"></div>
+    <div class="radar-ring radar-ring-3"></div>
+    <div class="radar-core heading"></div>
+  `,
+  iconSize: [80, 80],
+  iconAnchor: [40, 40],
+  popupAnchor: [0, -20]
+})
 const friendIcon = (initial) => createIcon('#22c55e', initial.toUpperCase())
 const friendHeadingIcon = (initial) => createIcon(HEADING_COLOR, initial.toUpperCase(), 'marker-heading')
 const midpointIcon = L.divIcon({
@@ -172,8 +196,8 @@ export function Map({
         ref={mapRef}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
 
         <MapUpdater center={center} shouldCenter={shouldCenter} />
@@ -182,7 +206,7 @@ export function Map({
         {userLocation && isSupActive && (
           <AnimatedMarker
             position={[userLocation.lat, userLocation.lng]}
-            icon={myDestination ? userHeadingIcon : userIcon}
+            icon={myDestination ? radarBeaconHeadingIcon : radarBeaconIcon}
             sessionId="user"
           >
             <Popup>
@@ -190,7 +214,7 @@ export function Map({
               <br />
               {myDestination
                 ? `Heading to ${myDestination.name}`
-                : "You're Sup!"}
+                : 'Broadcasting...'}
             </Popup>
           </AnimatedMarker>
         )}

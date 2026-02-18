@@ -78,7 +78,7 @@ describe('Map Animations — Status Colors', () => {
 
   it('user marker changes color when heading', () => {
     const content = read('src/components/Map.jsx')
-    expect(content).toContain('myDestination ? userHeadingIcon : userIcon')
+    expect(content).toContain('myDestination ? radarBeaconHeadingIcon : radarBeaconIcon')
   })
 
   it('friend markers change color when heading', () => {

@@ -295,7 +295,6 @@ export function Home() {
       <header className="home-header">
         <h1 className="logo">
           <img src="/logo.png" alt="Sup" className="logo-icon" />
-          <span className="tagline">— see who's free</span>
         </h1>
         <nav className="nav-links">
           <button className="nav-button invite-btn" onClick={handleShareLink}>
@@ -307,8 +306,8 @@ export function Home() {
           >
             Squad ({friends.length})
           </button>
-          <Link to="/profile" className="nav-button">
-            @{profile?.username || 'Profile'}
+          <Link to="/profile" className="nav-button profile-avatar">
+            {(profile?.username || '?')[0].toUpperCase()}
           </Link>
         </nav>
       </header>

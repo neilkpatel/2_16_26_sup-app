@@ -37,9 +37,9 @@ const radarBeaconIdleIcon = L.divIcon({
     <div class="radar-ring radar-ring-1"></div>
     <div class="radar-core"></div>
   `,
-  iconSize: [80, 80],
-  iconAnchor: [40, 40],
-  popupAnchor: [0, -20]
+  iconSize: [120, 120],
+  iconAnchor: [60, 60],
+  popupAnchor: [0, -30]
 })
 
 const radarBeaconIcon = L.divIcon({
@@ -50,9 +50,9 @@ const radarBeaconIcon = L.divIcon({
     <div class="radar-ring radar-ring-3"></div>
     <div class="radar-core broadcasting"></div>
   `,
-  iconSize: [80, 80],
-  iconAnchor: [40, 40],
-  popupAnchor: [0, -20]
+  iconSize: [120, 120],
+  iconAnchor: [60, 60],
+  popupAnchor: [0, -30]
 })
 
 const radarBeaconHeadingIcon = L.divIcon({
@@ -63,9 +63,9 @@ const radarBeaconHeadingIcon = L.divIcon({
     <div class="radar-ring radar-ring-3"></div>
     <div class="radar-core broadcasting heading"></div>
   `,
-  iconSize: [80, 80],
-  iconAnchor: [40, 40],
-  popupAnchor: [0, -20]
+  iconSize: [120, 120],
+  iconAnchor: [60, 60],
+  popupAnchor: [0, -30]
 })
 const friendIcon = (initial) => createIcon('#22c55e', initial.toUpperCase())
 const friendHeadingIcon = (initial) => createIcon(HEADING_COLOR, initial.toUpperCase(), 'marker-heading')

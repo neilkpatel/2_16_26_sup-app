@@ -98,7 +98,6 @@
 .map-container {
   flex: 1;
   min-height: 300px;
-  max-height: 65vh;
 }
 
 .suggestions-container {

@@ -379,10 +379,10 @@ export function Home() {
               </div>
             )}
 
-            {isSupActive && activeFriends.length > 0 && midpoint && (
+            {isSupActive && (midpoint || location) && (
               <div className="suggestions-container">
                 <BarSuggestions
-                  location={midpoint}
+                  location={midpoint || location}
                   selectedBarId={selectedBarId}
                   onSelectBar={handleSelectBar}
                   friendDestinations={friendDestinations}

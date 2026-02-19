@@ -97,10 +97,23 @@ serve(async (req) => {
       Deno.env.get("VAPID_PRIVATE_KEY")!
     )
 
-    const body = message || `${user.username} is free to hang`
+    const title = message || `${user.username} is free to hang`
+
+    // Build contextual body text
+    let notifBody = "Tap to open Sup"
+    if (!message) {
+      // Default Sup broadcast — mention how many others are already active
+      const activeCount = alreadySupIds.size
+      if (activeCount > 0) {
+        notifBody = `${activeCount} other${activeCount > 1 ? 's' : ''} in your squad ${activeCount > 1 ? 'are' : 'is'} also free`
+      } else {
+        notifBody = "Tap to join"
+      }
+    }
 
     const payload = JSON.stringify({
-      title: body,
+      title,
+      body: notifBody,
       url: "/",
     })
 
@@ -108,7 +121,7 @@ serve(async (req) => {
     const notificationRows = notifyIds.map((recipientId) => ({
       user_id: recipientId,
       from_user_id: userId,
-      message: body,
+      message: title,
     }))
     await supabase.from("notifications").insert(notificationRows)
 

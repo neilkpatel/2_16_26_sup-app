@@ -55,11 +55,20 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDes
       }
     })
 
-    if (topBarName && maxCount >= 2) {
-      return tagged.map(bar =>
-        bar.name === topBarName ? { ...bar, _isTopPick: true } : bar
-      )
+    // Mark the top pick (even with 1 person heading there)
+    if (topBarName && maxCount >= 1) {
+      tagged.forEach(bar => {
+        if (bar.name === topBarName) bar._isTopPick = true
+      })
     }
+
+    // Sort: bars with people heading there first
+    tagged.sort((a, b) => {
+      const aCount = a._pinnedBy ? a._pinnedBy.length : 0
+      const bCount = b._pinnedBy ? b._pinnedBy.length : 0
+      return bCount - aCount
+    })
+
     return tagged
   }, [bars, friendDestinations])
 
@@ -94,7 +103,7 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDes
 
   return (
     <div className="bar-suggestions">
-      <h3>Suggested meetup spots</h3>
+      <h3>Where to meet up?</h3>
       <div className="bars-list">
         {displayBars.map((bar, index) => (
           <div
@@ -110,11 +119,13 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDes
               <h4 className="bar-name">{bar.name}{bar._isTopPick && <span className="bar-trophy"> 🏆</span>}</h4>
               {bar._pinnedBy && (
                 <span className="bar-pinned-badge">
-                  @{bar._pinnedBy.join(', @')} heading here
+                  {selectedBarId === bar.id
+                    ? `You + @${bar._pinnedBy.join(', @')} heading here`
+                    : `@${bar._pinnedBy.join(', @')} heading here — tap to join`}
                 </span>
               )}
               {selectedBarId === bar.id && !bar._pinnedBy && (
-                <span className="bar-heading-badge">Heading here</span>
+                <span className="bar-heading-badge">You're heading here</span>
               )}
               {bar.address && <p className="bar-address">{bar.address}</p>}
               <div className="bar-meta">

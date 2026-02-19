@@ -9,6 +9,7 @@ const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(naviga
 export function OnboardingGate({ userId, children }) {
   const {
     currentStep,
+    isInstalled,
     locationPermission,
     notificationPermission,
     deferredPrompt,
@@ -27,7 +28,14 @@ export function OnboardingGate({ userId, children }) {
   // All done — render the app
   if (currentStep === 0) return children
 
-  const totalSteps = 3
+  // Count how many steps are actually remaining
+  const pendingSteps = [
+    !isInstalled,
+    locationPermission !== 'granted',
+    notificationPermission !== 'granted'
+  ].filter(Boolean).length
+
+  const isOnlyLocationNeeded = pendingSteps === 1 && currentStep === 2
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -50,6 +58,70 @@ export function OnboardingGate({ userId, children }) {
     setNotifLoading(false)
   }
 
+  // Simple location-only prompt for returning users
+  if (isOnlyLocationNeeded) {
+    return (
+      <div className="onboarding-gate">
+        <div className="onboarding-card">
+          <div className="onboarding-step-icon">📍</div>
+          <h2 className="onboarding-step-title">Allow Location</h2>
+          <p className="onboarding-step-desc">
+            Sup needs your location to find meetup spots. Your location is only used while the app is open and is never stored permanently.
+          </p>
+
+          {locationDenied ? (
+            <div className="onboarding-denied">
+              <p className="onboarding-denied-text">
+                Location access was denied. To fix this:
+              </p>
+              <div className="onboarding-instructions">
+                {isIOS ? (
+                  <>
+                    <div className="onboarding-instruction-row">
+                      <span className="onboarding-instruction-num">1</span>
+                      <span>Open <strong>Settings</strong> → <strong>Sup</strong></span>
+                    </div>
+                    <div className="onboarding-instruction-row">
+                      <span className="onboarding-instruction-num">2</span>
+                      <span>Tap <strong>Location</strong> → <strong>While Using the App</strong></span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="onboarding-instruction-row">
+                      <span className="onboarding-instruction-num">1</span>
+                      <span>Tap the <strong>lock icon</strong> in the address bar</span>
+                    </div>
+                    <div className="onboarding-instruction-row">
+                      <span className="onboarding-instruction-num">2</span>
+                      <span>Set <strong>Location</strong> to <strong>Allow</strong></span>
+                    </div>
+                  </>
+                )}
+              </div>
+              <button className="onboarding-btn secondary" onClick={() => window.location.reload()}>
+                Reload
+              </button>
+            </div>
+          ) : (
+            <button
+              className="onboarding-btn"
+              onClick={handleLocationClick}
+              disabled={locationLoading}
+            >
+              {locationLoading ? 'Requesting...' : 'Allow Location'}
+            </button>
+          )}
+
+          <button className="onboarding-logout" onClick={signOut}>
+            Log out
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Full onboarding flow for new users
   return (
     <div className="onboarding-gate">
       <div className="onboarding-card">
@@ -67,7 +139,7 @@ export function OnboardingGate({ userId, children }) {
         </div>
 
         <div className="onboarding-step-label">
-          Step {currentStep} of {totalSteps}
+          Step {currentStep} of 3
         </div>
 
         {/* Step 1: Install PWA */}
@@ -123,7 +195,7 @@ export function OnboardingGate({ userId, children }) {
             <div className="onboarding-step-icon">📍</div>
             <h2 className="onboarding-step-title">Enable Location</h2>
             <p className="onboarding-step-desc">
-              Sup uses your location to suggest meetup spots between you and your squad.
+              Sup uses your location to suggest meetup spots between you and your squad. Your location is only used while the app is open and is never stored permanently.
             </p>
 
             {locationDenied ? (

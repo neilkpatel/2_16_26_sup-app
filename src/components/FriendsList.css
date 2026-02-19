@@ -139,7 +139,7 @@
   gap: 0.5rem;
 }
 
-.friend-avatar {
+.friends-list .friend-avatar {
   width: 28px;
   height: 28px;
   border-radius: 50%;
@@ -152,7 +152,7 @@
   font-size: 0.75rem;
 }
 
-.friend-avatar.active {
+.friends-list .friend-avatar.active {
   background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: white;
 }

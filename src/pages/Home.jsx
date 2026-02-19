@@ -300,6 +300,12 @@ export function Home() {
           <button className="nav-button invite-btn" onClick={handleShareLink}>
             {copied ? 'Copied!' : 'Invite'}
           </button>
+          <Link to="/history" className="nav-button history-btn" aria-label="Activity">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </Link>
           <button
             className="nav-button"
             onClick={() => setShowFriends(!showFriends)}
@@ -330,16 +336,35 @@ export function Home() {
 
         <InstallPrompt />
 
-        {!isSupActive && activeFriends.length > 0 && (
-          <div className="active-friends-banner">
-            <div className="active-friends-info">
-              <span>
+        {!isSupActive && activeFriends.length > 0 && !declined && (
+          <div className="active-friends-overlay">
+            <div className="active-friends-card">
+              <div className="active-friends-pulse" />
+              <p className="active-friends-names">
                 {activeFriends.length === 1
-                  ? `@${activeFriends[0].username} is free to hang!`
-                  : `${activeFriends.map(f => `@${f.username}`).join(', ')} are free to hang!`}
-              </span>
-              {!declined && <span className="active-friends-cta">Tap Sup to join</span>}
+                  ? `@${activeFriends[0].username}`
+                  : activeFriends.map(f => `@${f.username}`).join(', ')}
+              </p>
+              <p className="active-friends-label">
+                {activeFriends.length === 1 ? 'is free to hang!' : 'are free to hang!'}
+              </p>
+              <p className="active-friends-hint">Tap the Sup button below to join</p>
+              <ReactionButtons
+                sessionIds={activeFriends.map(f => f.id)}
+                currentReaction={consolidatedReaction}
+                onReact={handleReaction}
+              />
             </div>
+          </div>
+        )}
+
+        {!isSupActive && activeFriends.length > 0 && declined && (
+          <div className="active-friends-dismissed">
+            <span>
+              {activeFriends.length === 1
+                ? `@${activeFriends[0].username} is free to hang`
+                : `${activeFriends.length} squad members are free`}
+            </span>
             <ReactionButtons
               sessionIds={activeFriends.map(f => f.id)}
               currentReaction={consolidatedReaction}

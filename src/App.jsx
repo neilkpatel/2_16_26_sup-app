@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Profile from './pages/Profile'
+import History from './pages/History'
 import AddFriend from './pages/AddFriend'
 import { OnboardingGate } from './components/OnboardingGate'
 import './App.css'
@@ -106,6 +107,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/history"
+        element={
+          <ProtectedRoute>
+            <History />
           </ProtectedRoute>
         }
       />

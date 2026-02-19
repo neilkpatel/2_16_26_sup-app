@@ -292,6 +292,18 @@ export function useSupStatus(userId, friendIds = []) {
     }
   }, [userId, fetchMyStatus, fetchFriendSessions])
 
+  // Re-fetch when app comes back to foreground (e.g. tapping a notification)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchMyStatus().catch(() => {})
+        fetchFriendSessions().catch(() => {})
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [fetchMyStatus, fetchFriendSessions])
+
   // Poll for friend sessions while Sup is active (Realtime can be unreliable on mobile)
   useEffect(() => {
     if (!isSupActive || !stableFriendIds.length) return

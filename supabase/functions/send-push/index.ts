@@ -97,11 +97,21 @@ serve(async (req) => {
       Deno.env.get("VAPID_PRIVATE_KEY")!
     )
 
+    const body = message || `${user.username} is free to hang`
+
     const payload = JSON.stringify({
       title: "Sup",
-      body: message || `${user.username} is free to hang`,
+      body,
       url: "/",
     })
+
+    // Log notification for each recipient
+    const notificationRows = notifyIds.map((recipientId) => ({
+      user_id: recipientId,
+      from_user_id: userId,
+      message: body,
+    }))
+    await supabase.from("notifications").insert(notificationRows)
 
     // Send push to each subscription
     const expiredIds: string[] = []

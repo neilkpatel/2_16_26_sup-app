@@ -187,7 +187,7 @@ export function Profile() {
             {DURATION_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
-                className={`duration-btn ${(profile?.sup_duration || 180) === (opt.value === 'eod' ? -1 : opt.value) ? 'active' : ''}`}
+                className={`duration-btn ${(profile?.sup_duration || 30) === (opt.value === 'eod' ? -1 : opt.value) ? 'active' : ''}`}
                 onClick={() => handleDurationChange(opt.value)}
               >
                 {opt.label}

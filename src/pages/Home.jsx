@@ -41,7 +41,7 @@ export function Home() {
     setDestination,
     refresh: refreshSup,
     loading: supLoading
-  } = useSupStatus(user?.id, friendIds, profile?.sup_duration || 180)
+  } = useSupStatus(user?.id, friendIds, profile?.sup_duration || 30)
 
   const {
     location,

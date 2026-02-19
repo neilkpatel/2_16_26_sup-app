@@ -79,7 +79,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  padding-bottom: 100px;
+  padding-bottom: 0;
 }
 
 .friends-panel {
@@ -132,11 +132,16 @@
 }
 
 .sup-cta {
+  position: fixed;
+  bottom: calc(90px + env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
   margin: 0;
-  padding: 1rem;
+  padding: 0.5rem 1rem;
   color: rgba(255, 255, 255, 0.45);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   text-align: center;
+  pointer-events: none;
 }
 
 .sup-countdown {

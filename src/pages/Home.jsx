@@ -32,6 +32,7 @@ export function Home() {
     goSup,
     cancelSup,
     setDestination,
+    refresh: refreshSup,
     loading: supLoading
   } = useSupStatus(user?.id, friendIds)
 
@@ -198,6 +199,8 @@ export function Home() {
     if (isSupActive) {
       try {
         await cancelSup()
+        setDeclined(true)
+        refreshSup()
       } catch (err) {
         setError(err.message)
       }

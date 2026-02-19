@@ -21,6 +21,8 @@ export function OnboardingGate({ userId, children }) {
   const push = usePushNotifications(userId)
   const [locationLoading, setLocationLoading] = useState(false)
   const [notifLoading, setNotifLoading] = useState(false)
+  const [locationDenied, setLocationDenied] = useState(false)
+  const [notifDenied, setNotifDenied] = useState(false)
 
   // All done — render the app
   if (currentStep === 0) return children
@@ -35,16 +37,16 @@ export function OnboardingGate({ userId, children }) {
 
   const handleLocationClick = async () => {
     setLocationLoading(true)
-    await requestLocation()
+    const result = await requestLocation()
+    if (result === 'denied') setLocationDenied(true)
     setLocationLoading(false)
   }
 
   const handleNotificationClick = async () => {
     setNotifLoading(true)
-    // Use the existing push hook which handles permission + Supabase subscription
     await push.subscribe()
-    // Also update our gate's state
-    await requestNotification()
+    const result = await requestNotification()
+    if (result === 'denied') setNotifDenied(true)
     setNotifLoading(false)
   }
 
@@ -124,7 +126,7 @@ export function OnboardingGate({ userId, children }) {
               Sup uses your location to suggest meetup spots between you and your squad.
             </p>
 
-            {locationPermission === 'denied' ? (
+            {locationDenied ? (
               <div className="onboarding-denied">
                 <p className="onboarding-denied-text">
                   Location access was denied. To fix this:
@@ -179,7 +181,7 @@ export function OnboardingGate({ userId, children }) {
               Get notified instantly when someone in your squad is free to hang.
             </p>
 
-            {notificationPermission === 'denied' ? (
+            {notifDenied ? (
               <div className="onboarding-denied">
                 <p className="onboarding-denied-text">
                   Notifications were denied. To fix this:

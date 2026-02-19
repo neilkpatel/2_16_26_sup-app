@@ -73,7 +73,11 @@ export function Home() {
   const [error, setError] = useState('')
   const [timeLeft, setTimeLeft] = useState(null)
   const [selectedBarId, setSelectedBarId] = useState(null)
-  const [declined, setDeclined] = useState(false)
+  const [dismissedSessionIds, setDismissedSessionIds] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem('dismissed_sups') || '[]')
+    } catch { return [] }
+  })
 
   // Countdown timer for active Sup session
   useEffect(() => {
@@ -105,19 +109,16 @@ export function Home() {
     }))
   }, [friendSessions])
 
+  // All active friend sessions dismissed?
+  const declined = activeFriends.length > 0 &&
+    activeFriends.every(f => dismissedSessionIds.includes(f.id))
+
   // Clear selected bar when Sup ends
   useEffect(() => {
     if (!isSupActive) {
       setSelectedBarId(null)
     }
   }, [isSupActive])
-
-  // Clear declined state when no friends are active
-  useEffect(() => {
-    if (activeFriends.length === 0) {
-      setDeclined(false)
-    }
-  }, [activeFriends.length])
 
   // Format countdown string
   const countdownText = useMemo(() => {
@@ -188,7 +189,8 @@ export function Home() {
         body: { userId: user.id }
       })
 
-      setDeclined(false)
+      setDismissedSessionIds([])
+      sessionStorage.removeItem('dismissed_sups')
     } catch (err) {
       setError(err.message)
     }
@@ -200,7 +202,10 @@ export function Home() {
     if (isSupActive) {
       try {
         await cancelSup()
-        setDeclined(true)
+        const ids = activeFriends.map(f => f.id)
+        const updated = [...new Set([...dismissedSessionIds, ...ids])]
+        setDismissedSessionIds(updated)
+        sessionStorage.setItem('dismissed_sups', JSON.stringify(updated))
         refreshSup()
       } catch (err) {
         setError(err.message)
@@ -212,7 +217,10 @@ export function Home() {
 
   // "Not now" — dismiss the overlay and notify the sender
   const handleNotNow = useCallback(() => {
-    setDeclined(true)
+    const ids = activeFriends.map(f => f.id)
+    const updated = [...new Set([...dismissedSessionIds, ...ids])]
+    setDismissedSessionIds(updated)
+    sessionStorage.setItem('dismissed_sups', JSON.stringify(updated))
 
     // Notify active friends that we can't make it
     supabase.functions.invoke('send-push', {
@@ -222,7 +230,7 @@ export function Home() {
         targetActive: true
       }
     })
-  }, [user?.id, profile?.username])
+  }, [activeFriends, dismissedSessionIds, user?.id, profile?.username])
 
   // Share squad link
   const shareLink = `${window.location.origin}/add/${profile?.username}`

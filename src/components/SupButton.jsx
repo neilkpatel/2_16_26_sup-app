@@ -1,7 +1,7 @@
 import './SupButton.css'
 
 export function SupButton({ isActive, loading, onClick, activeCount = 0 }) {
-  const label = loading ? '...' : isActive ? 'Done' : 'Sup'
+  const label = loading ? '...' : isActive ? 'End Sup' : 'Sup'
 
   return (
     <button

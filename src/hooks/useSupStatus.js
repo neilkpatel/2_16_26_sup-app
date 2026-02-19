@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 
-const SUP_DURATION_MINUTES = 5
+const DEFAULT_SUP_DURATION_MINUTES = 180
 
 /**
  * Parse a 64-bit double from hex string
@@ -52,7 +52,7 @@ function parseLocation(pointStr) {
  * @param {Array} friendIds - Array of friend user IDs
  * @returns {Object} Sup status state and actions
  */
-export function useSupStatus(userId, friendIds = []) {
+export function useSupStatus(userId, friendIds = [], supDuration = DEFAULT_SUP_DURATION_MINUTES) {
   const [isSupActive, setIsSupActive] = useState(false)
   const [mySession, setMySession] = useState(null)
   const [friendSessions, setFriendSessions] = useState([])
@@ -144,7 +144,7 @@ export function useSupStatus(userId, friendIds = []) {
         .eq('user_id', userId)
 
       const expiresAt = new Date()
-      expiresAt.setMinutes(expiresAt.getMinutes() + SUP_DURATION_MINUTES)
+      expiresAt.setMinutes(expiresAt.getMinutes() + supDuration)
 
       const { data, error: insertError } = await supabase
         .from('sup_sessions')

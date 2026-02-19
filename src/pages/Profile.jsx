@@ -1,11 +1,20 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useFriends } from '../hooks/useFriends'
+import { supabase } from '../lib/supabase'
+
+const DURATION_OPTIONS = [
+  { value: 5, label: '5 minutes' },
+  { value: 30, label: '30 minutes' },
+  { value: 60, label: '1 hour' },
+  { value: 180, label: '3 hours' },
+  { value: 'eod', label: 'End of day' },
+]
 import './Profile.css'
 
 export function Profile() {
-  const { user, profile, signOut, updateUsername } = useAuth()
+  const { user, profile, signOut, updateUsername, refreshProfile } = useAuth()
   const { friends } = useFriends(user?.id)
   const navigate = useNavigate()
 
@@ -83,6 +92,24 @@ export function Profile() {
     }
   }
 
+  const handleDurationChange = useCallback(async (value) => {
+    let minutes
+    if (value === 'eod') {
+      const now = new Date()
+      const endOfDay = new Date(now)
+      endOfDay.setHours(23, 59, 0, 0)
+      minutes = Math.round((endOfDay - now) / 60000)
+    } else {
+      minutes = Number(value)
+    }
+    await supabase
+      .from('users')
+      .update({ sup_duration: minutes })
+      .eq('id', user.id)
+    // Refresh profile to pick up the change
+    if (refreshProfile) refreshProfile()
+  }, [user?.id])
+
   const handleSignOut = async () => {
     await signOut()
     navigate('/login')
@@ -159,6 +186,22 @@ export function Profile() {
         <section className="profile-section">
           <h2>Squad</h2>
           <p className="friend-count">{friends.length} in your squad</p>
+        </section>
+
+        <section className="profile-section">
+          <h2>Sup Duration</h2>
+          <p className="hint">How long your Sup lasts when you tap it</p>
+          <div className="duration-options">
+            {DURATION_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                className={`duration-btn ${(profile?.sup_duration || 180) === opt.value ? 'active' : ''}`}
+                onClick={() => handleDurationChange(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </section>
 
         <section className="profile-section">

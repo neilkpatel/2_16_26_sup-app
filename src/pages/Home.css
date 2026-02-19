@@ -105,20 +105,16 @@
 
 .suggestions-container {
   padding: 1rem;
+  padding-bottom: calc(90px + env(safe-area-inset-bottom));
   background: #242442;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .sup-status-card {
-  position: fixed;
-  bottom: calc(90px + env(safe-area-inset-bottom));
-  left: 0;
-  right: 0;
   padding: 0.75rem 1rem;
-  background: rgba(26, 26, 46, 0.95);
+  background: rgba(255, 255, 255, 0.06);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   text-align: center;
-  z-index: 40;
 }
 
 .error-toast {

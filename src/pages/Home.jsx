@@ -366,6 +366,28 @@ export function Home() {
               />
             </div>
 
+            {isSupActive && (
+              <div className="sup-status-card">
+                <p className="sup-status">
+                  {activeFriends.length > 0
+                    ? `${activeFriends.length} in your squad also free — check the map!`
+                    : 'Your squad has been notified. Hang tight!'}
+                </p>
+                {activeFriends.some(f => f.destination_name) && (
+                  <div className="friend-destinations">
+                    {activeFriends.filter(f => f.destination_name).map(f => (
+                      <p key={f.id} className="friend-destination-status">
+                        @{f.username} is heading to {f.destination_name}
+                      </p>
+                    ))}
+                  </div>
+                )}
+                {countdownText && (
+                  <p className="sup-countdown">{countdownText}</p>
+                )}
+              </div>
+            )}
+
             {isSupActive && activeFriends.length > 0 && midpoint && (
               <div className="suggestions-container">
                 <BarSuggestions
@@ -378,28 +400,6 @@ export function Home() {
             )}
 
           </>
-        )}
-
-        {isSupActive && (
-          <div className="sup-status-card">
-            <p className="sup-status">
-              {activeFriends.length > 0
-                ? `${activeFriends.length} in your squad also free — check the map!`
-                : 'Your squad has been notified. Hang tight!'}
-            </p>
-            {activeFriends.some(f => f.destination_name) && (
-              <div className="friend-destinations">
-                {activeFriends.filter(f => f.destination_name).map(f => (
-                  <p key={f.id} className="friend-destination-status">
-                    @{f.username} is heading to {f.destination_name}
-                  </p>
-                ))}
-              </div>
-            )}
-            {countdownText && (
-              <p className="sup-countdown">{countdownText}</p>
-            )}
-          </div>
         )}
 
         {!isSupActive && !declined && activeFriends.length === 0 && friends.length > 0 && (

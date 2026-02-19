@@ -301,7 +301,7 @@ export function Home() {
             {copied ? 'Copied!' : 'Invite'}
           </button>
           <button
-            className="nav-button"
+            className="nav-button invite-btn"
             onClick={() => setShowFriends(!showFriends)}
           >
             Squad ({friends.length})

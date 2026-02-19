@@ -11,7 +11,6 @@ import SupButton from '../components/SupButton'
 import BarSuggestions from '../components/BarSuggestions'
 import FriendsList from '../components/FriendsList'
 import InstallPrompt from '../components/InstallPrompt'
-import SquadActivity from '../components/SquadActivity'
 import ReactionButtons from '../components/ReactionButtons'
 import ReactionsSummary from '../components/ReactionsSummary'
 import EmptySquad from '../components/EmptySquad'
@@ -408,9 +407,6 @@ export function Home() {
               </div>
             )}
 
-            {!isSupActive && friends.length > 0 && (
-              <SquadActivity friendIds={friendIds} friends={friends} />
-            )}
           </>
         )}
 

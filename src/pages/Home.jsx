@@ -14,7 +14,6 @@ import InstallPrompt from '../components/InstallPrompt'
 import ReactionButtons from '../components/ReactionButtons'
 import ReactionsSummary from '../components/ReactionsSummary'
 import EmptySquad from '../components/EmptySquad'
-import RecentActivity from '../components/RecentActivity'
 import { calculateMidpoint } from '../lib/geo'
 import { supabase } from '../lib/supabase'
 import './Home.css'
@@ -306,6 +305,7 @@ export function Home() {
           >
             Squad ({friends.length})
           </button>
+          <Link to="/history" className="nav-button invite-btn">Recent</Link>
           <Link to="/profile" className="nav-button profile-avatar">
             {(profile?.username || '?')[0].toUpperCase()}
           </Link>
@@ -402,9 +402,6 @@ export function Home() {
               </div>
             )}
 
-            {!isSupActive && (
-              <RecentActivity userId={user?.id} />
-            )}
           </>
         )}
 

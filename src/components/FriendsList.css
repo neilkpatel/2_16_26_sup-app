@@ -125,7 +125,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -136,12 +136,12 @@
 .friend-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .friend-avatar {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.7);
@@ -149,7 +149,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
 }
 
 .friend-avatar.active {
@@ -164,12 +164,12 @@
 
 .friend-username {
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.9);
 }
 
 .friend-status {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   color: #22c55e;
   font-weight: 500;
 }

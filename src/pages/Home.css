@@ -110,10 +110,15 @@
 }
 
 .sup-status-card {
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.04);
+  position: fixed;
+  bottom: calc(90px + env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  padding: 0.75rem 1rem;
+  background: rgba(26, 26, 46, 0.95);
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   text-align: center;
+  z-index: 40;
 }
 
 .error-toast {

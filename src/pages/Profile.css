@@ -1,6 +1,7 @@
 .profile-container {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #1a1a2e;
+  color: white;
 }
 
 .profile-header {
@@ -8,8 +9,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .profile-header h1 {
@@ -33,21 +34,21 @@
 }
 
 .profile-section {
-  background: white;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.75rem;
   padding: 1.25rem;
   margin-bottom: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .profile-section h2 {
   margin: 0 0 0.75rem;
   font-size: 1rem;
-  color: #333;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .hint {
-  color: #888;
+  color: rgba(255, 255, 255, 0.45);
   font-size: 0.875rem;
   margin: 0 0 0.75rem;
 }
@@ -65,21 +66,23 @@
 }
 
 .edit-button {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   cursor: pointer;
-  color: #333;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .edit-username input {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 0.5rem;
   font-size: 1rem;
   margin-bottom: 0.5rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
 }
 
 .edit-username input:focus {
@@ -88,7 +91,7 @@
 }
 
 .error {
-  color: #c00;
+  color: #f87171;
   font-size: 0.875rem;
   margin: 0 0 0.5rem;
 }
@@ -112,12 +115,12 @@
 }
 
 .cancel-button {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.1);
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   cursor: pointer;
-  color: #333;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .share-link {
@@ -128,10 +131,11 @@
 .share-link input {
   flex: 1;
   padding: 0.75rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 0.5rem;
   font-size: 0.875rem;
-  background: #f9f9f9;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .share-button {
@@ -146,17 +150,17 @@
 }
 
 .friend-count {
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
   margin: 0;
 }
 
 .email {
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
   margin: 0 0 1rem;
 }
 
 .signout-button {
-  background: #ff4444;
+  background: #ef4444;
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -167,7 +171,7 @@
 }
 
 .signout-button:hover {
-  background: #cc0000;
+  background: #dc2626;
 }
 
 .duration-options {
@@ -178,13 +182,13 @@
 
 .duration-btn {
   padding: 0.5rem 1rem;
-  border: 2px solid #e0e0e0;
+  border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 2rem;
-  background: white;
+  background: rgba(255, 255, 255, 0.06);
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
-  color: #333;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .duration-btn.active {

@@ -32,10 +32,21 @@
 
 .history-empty {
   text-align: center;
-  color: rgba(255, 255, 255, 0.4);
-  padding: 3rem 1.5rem;
-  font-size: 0.95rem;
-  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 4rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.history-empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.history-empty-hint {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 0.25rem;
 }
 
 .history-item {

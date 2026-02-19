@@ -144,7 +144,12 @@ export function useSupStatus(userId, friendIds = [], supDuration = DEFAULT_SUP_D
         .eq('user_id', userId)
 
       const expiresAt = new Date()
-      expiresAt.setMinutes(expiresAt.getMinutes() + supDuration)
+      if (supDuration === -1) {
+        // End of day
+        expiresAt.setHours(23, 59, 0, 0)
+      } else {
+        expiresAt.setMinutes(expiresAt.getMinutes() + supDuration)
+      }
 
       const { data, error: insertError } = await supabase
         .from('sup_sessions')

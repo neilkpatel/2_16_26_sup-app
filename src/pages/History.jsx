@@ -54,7 +54,11 @@ export function History() {
         {loading ? (
           <p className="history-empty">Loading...</p>
         ) : notifications.length === 0 ? (
-          <p className="history-empty">No activity yet. When your squad goes Sup, it'll show up here.</p>
+          <div className="history-empty">
+            <div className="history-empty-icon">🔔</div>
+            <p>No activity yet</p>
+            <p className="history-empty-hint">When someone in your squad goes Sup, you'll see it here</p>
+          </div>
         ) : (
           notifications.map((n) => (
             <div key={n.id} className="history-item">

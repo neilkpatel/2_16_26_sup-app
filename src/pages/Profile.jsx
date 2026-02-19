@@ -93,15 +93,7 @@ export function Profile() {
   }
 
   const handleDurationChange = useCallback(async (value) => {
-    let minutes
-    if (value === 'eod') {
-      const now = new Date()
-      const endOfDay = new Date(now)
-      endOfDay.setHours(23, 59, 0, 0)
-      minutes = Math.round((endOfDay - now) / 60000)
-    } else {
-      minutes = Number(value)
-    }
+    const minutes = value === 'eod' ? -1 : Number(value)
     await supabase
       .from('users')
       .update({ sup_duration: minutes })
@@ -195,7 +187,7 @@ export function Profile() {
             {DURATION_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
-                className={`duration-btn ${(profile?.sup_duration || 180) === opt.value ? 'active' : ''}`}
+                className={`duration-btn ${(profile?.sup_duration || 180) === (opt.value === 'eod' ? -1 : opt.value) ? 'active' : ''}`}
                 onClick={() => handleDurationChange(opt.value)}
               >
                 {opt.label}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useFriends } from '../hooks/useFriends'
 import { useSupStatus } from '../hooks/useSupStatus'
@@ -17,6 +17,16 @@ import EmptySquad from '../components/EmptySquad'
 import { calculateMidpoint } from '../lib/geo'
 import { supabase } from '../lib/supabase'
 import './Home.css'
+
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return 'earlier today'
+}
 
 export function Home() {
   const { user, profile } = useAuth()
@@ -65,6 +75,17 @@ export function Home() {
     sendReaction,
     getReactionsForSession
   } = useReactions(user?.id, reactionSessionIds)
+
+  const navTo = useNavigate()
+
+  // Check for pending invite from pre-signup flow
+  useEffect(() => {
+    const pendingInvite = localStorage.getItem('pending_invite')
+    if (pendingInvite) {
+      localStorage.removeItem('pending_invite')
+      navTo(`/add/${pendingInvite}`)
+    }
+  }, [navTo])
 
   const [showFriends, setShowFriends] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -214,18 +235,29 @@ export function Home() {
     await sendReaction(sessionId, reaction)
 
     if (reaction === 'im_in' && !isSupActive) {
+      // Notify the session owner that we're joining
+      const session = activeFriends.find(f => f.id === sessionId)
+      if (session) {
+        supabase.functions.invoke('send-push', {
+          body: {
+            userId: user.id,
+            message: `${profile?.username} is joining!`,
+            targetActive: true
+          }
+        })
+      }
       await triggerSup()
       setJoinFlash(true)
       setTimeout(() => setJoinFlash(false), 2000)
     } else if (reaction === 'cant_tonight' || reaction === 'maybe_later') {
       setDeclined(true)
     }
-  }, [sendReaction, isSupActive, triggerSup])
+  }, [sendReaction, isSupActive, triggerSup, activeFriends, user?.id, profile?.username])
 
   // Share squad link
   const shareLink = `${window.location.origin}/add/${profile?.username}`
   const handleShareLink = useCallback(async () => {
-    const text = 'Join my squad on Sup!\n\nAfter signing up, tap Share ⬆ then "Add to Home Screen" so you get push notifications. When it asks, allow notifications and location so we can find a spot to meet up.'
+    const text = 'Join my squad on Sup!'
     const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0
     if (isMobile && navigator.share) {
       try {
@@ -344,6 +376,11 @@ export function Home() {
               </p>
               <p className="active-friends-label">
                 {activeFriends.length === 1 ? 'is free to hang!' : 'are free to hang!'}
+              </p>
+              <p className="active-friends-since">
+                {activeFriends.length === 1
+                  ? `Went Sup ${timeAgo(activeFriends[0].started_at)}`
+                  : `Started ${timeAgo(activeFriends[activeFriends.length - 1].started_at)}`}
               </p>
               <p className="active-friends-hint">Tap the Sup button below to join</p>
               <ReactionButtons

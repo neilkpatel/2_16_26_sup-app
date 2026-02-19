@@ -75,7 +75,8 @@ export function AddFriend() {
 
   const handleAddFriend = async () => {
     if (!user) {
-      // Redirect to login with return URL
+      // Save invite intent and redirect to login
+      localStorage.setItem('pending_invite', username)
       navigate(`/login?return=/add/${username}`)
       return
     }

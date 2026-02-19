@@ -23,6 +23,9 @@ export function Login() {
   const { signIn, signUp } = useAuth()
   const navigate = useNavigate()
 
+  // Check for return URL (e.g. from /add/username invite flow)
+  const returnUrl = new URLSearchParams(window.location.search).get('return')
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -42,10 +45,14 @@ export function Login() {
         }
 
         await signUp(email, password, username)
+        if (returnUrl) {
+          navigate(returnUrl)
+          return
+        }
         setMessage('Check your email to confirm your account!')
       } else {
         await signIn(email, password)
-        navigate('/')
+        navigate(returnUrl || '/')
       }
     } catch (err) {
       setError(err.message)

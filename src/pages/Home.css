@@ -87,10 +87,11 @@
   top: 0;
   right: 0;
   width: 300px;
-  max-height: 50vh;
+  max-height: 70vh;
   background: #242442;
   border-radius: 0 0 0 1rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  overflow-y: auto;
   z-index: 50;
   overflow: hidden;
 }
@@ -197,8 +198,14 @@
 .active-friends-label {
   font-size: 1.1rem;
   font-weight: 500;
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.25rem;
   opacity: 0.9;
+}
+
+.active-friends-since {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin: 0 0 0.75rem;
 }
 
 .active-friends-hint {
@@ -304,7 +311,7 @@
   .friends-panel {
     width: 100%;
     border-radius: 0;
-    max-height: 40vh;
+    max-height: 60vh;
   }
 
   .home-header {

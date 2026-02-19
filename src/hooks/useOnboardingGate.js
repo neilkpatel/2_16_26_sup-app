@@ -12,7 +12,12 @@ export function useOnboardingGate() {
       || navigator.standalone === true
   })
 
-  const [locationPermission, setLocationPermission] = useState('prompt')
+  const [locationPermission, setLocationPermission] = useState(() => {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('location_granted') === 'true') {
+      return 'granted'
+    }
+    return 'prompt'
+  })
   const [notificationPermission, setNotificationPermission] = useState(() => {
     if (typeof Notification !== 'undefined') return Notification.permission
     return 'default'
@@ -35,8 +40,11 @@ export function useOnboardingGate() {
       navigator.permissions.query({ name: 'geolocation' }).then((status) => {
         permStatus = status
         setLocationPermission(status.state)
+        if (status.state === 'granted') localStorage.setItem('location_granted', 'true')
         status.addEventListener('change', () => {
           setLocationPermission(status.state)
+          if (status.state === 'granted') localStorage.setItem('location_granted', 'true')
+          if (status.state === 'denied') localStorage.removeItem('location_granted')
         })
       }).catch(() => {
         // Permissions API failed — try silent geolocation probe
@@ -54,9 +62,15 @@ export function useOnboardingGate() {
 
     function probeLocation() {
       navigator.geolocation.getCurrentPosition(
-        () => setLocationPermission('granted'),
+        () => {
+          setLocationPermission('granted')
+          localStorage.setItem('location_granted', 'true')
+        },
         (err) => {
-          if (err.code === 1) setLocationPermission('denied')
+          if (err.code === 1) {
+            setLocationPermission('denied')
+            localStorage.removeItem('location_granted')
+          }
           // Timeout/unavailable — don't block, assume prompt
         },
         { timeout: 3000 }
@@ -89,16 +103,17 @@ export function useOnboardingGate() {
       navigator.geolocation.getCurrentPosition(
         () => {
           setLocationPermission('granted')
+          localStorage.setItem('location_granted', 'true')
           resolve('granted')
         },
         (err) => {
-          // Permission denied
           if (err.code === 1) {
             setLocationPermission('denied')
+            localStorage.removeItem('location_granted')
             resolve('denied')
           } else {
-            // Other error (timeout, position unavailable) — permission may still be granted
             setLocationPermission('granted')
+            localStorage.setItem('location_granted', 'true')
             resolve('granted')
           }
         },

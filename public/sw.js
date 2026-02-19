@@ -14,12 +14,17 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close()
+  const urlToOpen = new URL(event.notification.data?.url || '/', self.location.origin).href
+
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((windowClients) => {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
       for (const client of windowClients) {
-        if (client.url.includes(self.location.origin)) return client.focus()
+        if (client.url.startsWith(self.location.origin)) {
+          client.navigate(urlToOpen)
+          return client.focus()
+        }
       }
-      return clients.openWindow(event.notification.data?.url || '/')
+      return clients.openWindow(urlToOpen)
     })
   )
 })

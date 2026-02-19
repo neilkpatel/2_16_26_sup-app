@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useOnboardingGate } from '../hooks/useOnboardingGate'
 import { usePushNotifications } from '../hooks/usePushNotifications'
+import { useAuth } from '../hooks/useAuth'
 import './OnboardingGate.css'
 
 const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -16,6 +17,7 @@ export function OnboardingGate({ userId, children }) {
     triggerInstallPrompt
   } = useOnboardingGate()
 
+  const { signOut } = useAuth()
   const push = usePushNotifications(userId)
   const [locationLoading, setLocationLoading] = useState(false)
   const [notifLoading, setNotifLoading] = useState(false)
@@ -222,6 +224,10 @@ export function OnboardingGate({ userId, children }) {
             )}
           </div>
         )}
+
+        <button className="onboarding-logout" onClick={signOut}>
+          Log out
+        </button>
       </div>
     </div>
   )

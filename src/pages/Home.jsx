@@ -5,14 +5,11 @@ import { useFriends } from '../hooks/useFriends'
 import { useSupStatus } from '../hooks/useSupStatus'
 import { useLocation } from '../hooks/useLocation'
 import { usePushNotifications } from '../hooks/usePushNotifications'
-import { useReactions } from '../hooks/useReactions'
 import Map from '../components/Map'
 import SupButton from '../components/SupButton'
 import BarSuggestions from '../components/BarSuggestions'
 import FriendsList from '../components/FriendsList'
 import InstallPrompt from '../components/InstallPrompt'
-import ReactionButtons from '../components/ReactionButtons'
-import ReactionsSummary from '../components/ReactionsSummary'
 import EmptySquad from '../components/EmptySquad'
 import { calculateMidpoint } from '../lib/geo'
 import { supabase } from '../lib/supabase'
@@ -60,22 +57,6 @@ export function Home() {
     subscribe: pushSubscribe
   } = usePushNotifications(user?.id)
 
-  // Collect session IDs for reactions — friend sessions (when NOT Sup'd) or my session (when Sup'd)
-  const reactionSessionIds = useMemo(() => {
-    if (isSupActive && mySession) {
-      // When Sup'd, watch reactions on my own session
-      return [mySession.id]
-    }
-    // When NOT Sup'd, watch friend sessions to react to
-    return friendSessions.map(s => s.id)
-  }, [isSupActive, mySession, friendSessions])
-
-  const {
-    myReactions,
-    sendReaction,
-    getReactionsForSession
-  } = useReactions(user?.id, reactionSessionIds)
-
   const navTo = useNavigate()
 
   // Check for pending invite from pre-signup flow
@@ -92,7 +73,6 @@ export function Home() {
   const [error, setError] = useState('')
   const [timeLeft, setTimeLeft] = useState(null)
   const [selectedBarId, setSelectedBarId] = useState(null)
-  const [joinFlash, setJoinFlash] = useState(false)
   const [declined, setDeclined] = useState(false)
 
   // Countdown timer for active Sup session
@@ -230,29 +210,19 @@ export function Home() {
     }
   }
 
-  // Handle reaction — "i'm in" auto-triggers Sup, others decline
-  const handleReaction = useCallback(async (sessionId, reaction) => {
-    await sendReaction(sessionId, reaction)
+  // "Not now" — dismiss the overlay and notify the sender
+  const handleNotNow = useCallback(() => {
+    setDeclined(true)
 
-    if (reaction === 'im_in' && !isSupActive) {
-      // Notify the session owner that we're joining
-      const session = activeFriends.find(f => f.id === sessionId)
-      if (session) {
-        supabase.functions.invoke('send-push', {
-          body: {
-            userId: user.id,
-            message: `${profile?.username} is joining!`,
-            targetActive: true
-          }
-        })
+    // Notify active friends that we can't make it
+    supabase.functions.invoke('send-push', {
+      body: {
+        userId: user.id,
+        message: `${profile?.username} can't make it right now`,
+        targetActive: true
       }
-      await triggerSup()
-      setJoinFlash(true)
-      setTimeout(() => setJoinFlash(false), 2000)
-    } else if (reaction === 'cant_tonight' || reaction === 'maybe_later') {
-      setDeclined(true)
-    }
-  }, [sendReaction, isSupActive, triggerSup, activeFriends, user?.id, profile?.username])
+    })
+  }, [user?.id, profile?.username])
 
   // Share squad link
   const shareLink = `${window.location.origin}/add/${profile?.username}`
@@ -310,20 +280,6 @@ export function Home() {
     return dests
   }, [activeFriends])
 
-  // Reactions on my session (shown when I'm Sup'd)
-  const mySessionReactions = useMemo(() => {
-    if (!mySession) return []
-    return getReactionsForSession(mySession.id)
-  }, [mySession, getReactionsForSession])
-
-  // Consolidated reaction — picks first non-null reaction across active friends
-  const consolidatedReaction = useMemo(() => {
-    for (const friend of activeFriends) {
-      if (myReactions[friend.id]) return myReactions[friend.id]
-    }
-    return null
-  }, [activeFriends, myReactions])
-
   return (
     <div className="home-container">
       <header className="home-header">
@@ -352,10 +308,6 @@ export function Home() {
           <div className="error-toast">{error || locationError}</div>
         )}
 
-        {joinFlash && (
-          <div className="join-flash">You're in!</div>
-        )}
-
         {pushSupported && pushPermission === 'default' && !pushSubscribed && (
           <div className="notification-banner">
             <span>Enable notifications to know when your squad is free</span>
@@ -382,28 +334,11 @@ export function Home() {
                   ? `Went Sup ${timeAgo(activeFriends[0].started_at)}`
                   : `Started ${timeAgo(activeFriends[activeFriends.length - 1].started_at)}`}
               </p>
-              <p className="active-friends-hint">Tap the Sup button below to join</p>
-              <ReactionButtons
-                sessionIds={activeFriends.map(f => f.id)}
-                currentReaction={consolidatedReaction}
-                onReact={handleReaction}
-              />
+              <p className="active-friends-hint">Tap Sup to join</p>
+              <button className="active-friends-dismiss-btn" onClick={handleNotNow}>
+                Not now
+              </button>
             </div>
-          </div>
-        )}
-
-        {!isSupActive && activeFriends.length > 0 && declined && (
-          <div className="active-friends-dismissed">
-            <span>
-              {activeFriends.length === 1
-                ? `@${activeFriends[0].username} is free to hang`
-                : `${activeFriends.length} squad members are free`}
-            </span>
-            <ReactionButtons
-              sessionIds={activeFriends.map(f => f.id)}
-              currentReaction={consolidatedReaction}
-              onReact={handleReaction}
-            />
           </div>
         )}
 
@@ -452,9 +387,6 @@ export function Home() {
                 ? `${activeFriends.length} in your squad also free — check the map!`
                 : 'Your squad has been notified. Hang tight!'}
             </p>
-            {mySessionReactions.length > 0 && (
-              <ReactionsSummary reactions={mySessionReactions} />
-            )}
             {activeFriends.some(f => f.destination_name) && (
               <div className="friend-destinations">
                 {activeFriends.filter(f => f.destination_name).map(f => (
@@ -475,18 +407,16 @@ export function Home() {
         )}
 
         {!isSupActive && declined && (
-          <p className="sup-declined-text">You can always change your mind and tap "i'm in"</p>
+          <p className="sup-declined-text">Changed your mind? Tap Sup to join</p>
         )}
       </main>
 
-      {(!declined || isSupActive) && (
-        <SupButton
-          isActive={isSupActive}
-          loading={supLoading || locationLoading}
-          onClick={handleSupToggle}
-          activeCount={activeFriends.length}
-        />
-      )}
+      <SupButton
+        isActive={isSupActive}
+        loading={supLoading || locationLoading}
+        onClick={handleSupToggle}
+        activeCount={activeFriends.length}
+      />
     </div>
   )
 }

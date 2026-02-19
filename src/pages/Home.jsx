@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useFriends } from '../hooks/useFriends'
@@ -288,6 +288,57 @@ export function Home() {
     return dests
   }, [activeFriends])
 
+  // Consensus detection — when 2+ people pick the same bar
+  const consensus = useMemo(() => {
+    // Case 1: I picked a bar and friends match
+    if (myDestination?.name) {
+      const matchingFriends = friendDestinations.find(d => d.name === myDestination.name)
+      if (matchingFriends) {
+        return {
+          barName: myDestination.name,
+          usernames: matchingFriends.usernames,
+          includesMe: true
+        }
+      }
+    }
+
+    // Case 2: I haven't picked, but 2+ friends agree on a bar
+    if (isSupActive && !myDestination?.name) {
+      const popular = friendDestinations.find(d => d.usernames.length >= 2)
+      if (popular) {
+        return {
+          barName: popular.name,
+          usernames: popular.usernames,
+          includesMe: false
+        }
+      }
+    }
+
+    return null
+  }, [myDestination, friendDestinations, isSupActive])
+
+  // Track previous consensus to detect new matches
+  const prevConsensusRef = useRef(null)
+  const [showConsensus, setShowConsensus] = useState(false)
+
+  useEffect(() => {
+    const prevKey = prevConsensusRef.current
+    const newKey = consensus ? `${consensus.barName}-${consensus.usernames.join(',')}` : null
+
+    if (consensus && newKey !== prevKey) {
+      setShowConsensus(true)
+      // Auto-dismiss after 8 seconds
+      const timer = setTimeout(() => setShowConsensus(false), 8000)
+      prevConsensusRef.current = newKey
+      return () => clearTimeout(timer)
+    }
+
+    if (!consensus) {
+      setShowConsensus(false)
+      prevConsensusRef.current = null
+    }
+  }, [consensus])
+
   return (
     <div className="home-container">
       <header className="home-header">
@@ -384,6 +435,34 @@ export function Home() {
                 {countdownText && (
                   <span className="sup-status-timer">{countdownText}</span>
                 )}
+              </div>
+            )}
+
+            {showConsensus && consensus && (
+              <div className="consensus-banner">
+                <div className="consensus-icon">🎉</div>
+                <p className="consensus-text">
+                  {consensus.includesMe ? (
+                    <>
+                      You and {consensus.usernames.length === 1
+                        ? `@${consensus.usernames[0]}`
+                        : consensus.usernames.slice(0, -1).map(u => `@${u}`).join(', ') +
+                          ` and @${consensus.usernames[consensus.usernames.length - 1]}`
+                      } are heading to <strong>{consensus.barName}</strong>!
+                    </>
+                  ) : (
+                    <>
+                      {consensus.usernames.length === 1
+                        ? `@${consensus.usernames[0]} is`
+                        : consensus.usernames.map(u => `@${u}`).join(' and ') + ' agreed on'
+                      } <strong>{consensus.barName}</strong>!
+                    </>
+                  )}
+                </p>
+                <p className="consensus-subtext">
+                  {consensus.includesMe ? 'Go meet them there!' : 'Tap it to join them!'}
+                </p>
+                <button className="consensus-dismiss" onClick={() => setShowConsensus(false)}>Got it</button>
               </div>
             )}
 

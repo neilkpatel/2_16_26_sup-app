@@ -306,6 +306,54 @@
   }
 }
 
+/* Consensus banner — when 2+ people pick the same bar */
+.consensus-banner {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  padding: 1.25rem 1rem;
+  text-align: center;
+  color: white;
+  animation: consensus-slide 0.4s ease-out;
+}
+
+@keyframes consensus-slide {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.consensus-icon {
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.consensus-text {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.consensus-subtext {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.consensus-dismiss {
+  margin-top: 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.4rem 1.25rem;
+  border-radius: 2rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.consensus-dismiss:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 /* Declined state text */
 .sup-declined-text {
   margin: 0;

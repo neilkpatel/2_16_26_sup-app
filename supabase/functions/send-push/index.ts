@@ -100,8 +100,7 @@ serve(async (req) => {
     const body = message || `${user.username} is free to hang`
 
     const payload = JSON.stringify({
-      title: "Sup",
-      body,
+      title: body,
       url: "/",
     })
 

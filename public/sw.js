@@ -3,8 +3,7 @@
 self.addEventListener('push', (event) => {
   const data = event.data?.json() || {}
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Sup', {
-      body: data.body || 'Someone in your squad is free!',
+    self.registration.showNotification(data.title || 'Someone in your squad is free!', {
       icon: '/icon-192.png',
       badge: '/icon-192.png',
       data: { url: data.url || '/' }

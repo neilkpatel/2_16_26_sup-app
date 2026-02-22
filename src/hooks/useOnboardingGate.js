@@ -84,7 +84,7 @@ export function useOnboardingGate() {
       if (typeof Notification !== 'undefined') {
         setNotificationPermission(Notification.permission)
       }
-    }, 1000)
+    }, 3000)
     return () => clearInterval(interval)
   }, [])
 
@@ -141,13 +141,28 @@ export function useOnboardingGate() {
     return false
   }, [deferredPrompt])
 
+  // Track skipped steps
+  const [skippedSteps, setSkippedSteps] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('sup_skipped_steps') || '[]')
+    } catch { return [] }
+  })
+
+  const skipStep = useCallback((step) => {
+    setSkippedSteps(prev => {
+      const next = [...prev, step]
+      localStorage.setItem('sup_skipped_steps', JSON.stringify(next))
+      return next
+    })
+  }, [])
+
   // Determine current step: 1 = install, 2 = location, 3 = notifications, 0 = done
   let currentStep = 0
-  if (!isInstalled) {
+  if (!isInstalled && !skippedSteps.includes(1)) {
     currentStep = 1
-  } else if (locationPermission !== 'granted') {
+  } else if (locationPermission !== 'granted' && !skippedSteps.includes(2)) {
     currentStep = 2
-  } else if (notificationPermission !== 'granted') {
+  } else if (notificationPermission !== 'granted' && !skippedSteps.includes(3)) {
     currentStep = 3
   }
 
@@ -159,7 +174,8 @@ export function useOnboardingGate() {
     deferredPrompt,
     requestLocation,
     requestNotification,
-    triggerInstallPrompt
+    triggerInstallPrompt,
+    skipStep
   }
 }
 

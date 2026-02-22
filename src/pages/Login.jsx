@@ -12,7 +12,10 @@ function shouldShowInstall() {
 }
 
 export function Login() {
-  const [isSignUp, setIsSignUp] = useState(true)
+  const [isSignUp, setIsSignUp] = useState(() => {
+    // Returning users should see Sign In, not Sign Up
+    return !localStorage.getItem('sup_has_account')
+  })
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
@@ -45,13 +48,11 @@ export function Login() {
         }
 
         await signUp(email, password, username)
-        if (returnUrl) {
-          navigate(returnUrl)
-          return
-        }
-        setMessage('Check your email to confirm your account!')
+        localStorage.setItem('sup_has_account', 'true')
+        navigate(returnUrl || '/')
       } else {
         await signIn(email, password)
+        localStorage.setItem('sup_has_account', 'true')
         navigate(returnUrl || '/')
       }
     } catch (err) {

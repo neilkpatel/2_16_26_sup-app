@@ -15,7 +15,8 @@ export function OnboardingGate({ userId, children }) {
     deferredPrompt,
     requestLocation,
     requestNotification,
-    triggerInstallPrompt
+    triggerInstallPrompt,
+    skipStep
   } = useOnboardingGate()
 
   const { signOut } = useAuth()
@@ -100,7 +101,7 @@ export function OnboardingGate({ userId, children }) {
                 )}
               </div>
               <button className="onboarding-btn secondary" onClick={() => window.location.reload()}>
-                Reload
+                I've updated settings — reload
               </button>
             </div>
           ) : (
@@ -113,6 +114,9 @@ export function OnboardingGate({ userId, children }) {
             </button>
           )}
 
+          <button className="onboarding-skip" onClick={() => skipStep(2)}>
+            I'll do this later
+          </button>
           <button className="onboarding-logout" onClick={signOut}>
             Log out
           </button>
@@ -229,7 +233,7 @@ export function OnboardingGate({ userId, children }) {
                   )}
                 </div>
                 <button className="onboarding-btn secondary" onClick={() => window.location.reload()}>
-                  Reload
+                  I've updated settings — reload
                 </button>
               </div>
             ) : (
@@ -241,6 +245,9 @@ export function OnboardingGate({ userId, children }) {
                 {locationLoading ? 'Requesting...' : 'Allow Location'}
               </button>
             )}
+            <button className="onboarding-skip" onClick={() => skipStep(2)}>
+              I'll do this later
+            </button>
           </div>
         )}
 
@@ -284,7 +291,7 @@ export function OnboardingGate({ userId, children }) {
                   )}
                 </div>
                 <button className="onboarding-btn secondary" onClick={() => window.location.reload()}>
-                  Reload
+                  I've updated settings — reload
                 </button>
               </div>
             ) : (
@@ -296,6 +303,9 @@ export function OnboardingGate({ userId, children }) {
                 {notifLoading || push.loading ? 'Requesting...' : 'Allow Notifications'}
               </button>
             )}
+            <button className="onboarding-skip" onClick={() => skipStep(3)}>
+              I'll do this later
+            </button>
           </div>
         )}
 

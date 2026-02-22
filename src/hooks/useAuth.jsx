@@ -149,7 +149,18 @@ export function AuthProvider({ children }) {
 
   // Initialize auth state — single flow, no races
   useEffect(() => {
-    // onAuthStateChange fires for the initial session AND subsequent changes.
+    // First, actively check for an existing session.
+    // This runs before onAuthStateChange fires and prevents the race condition
+    // where ProtectedRoute sees loading=false + user=null before session restores.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(session.user)
+      }
+      initialized.current = true
+      setLoading(false)
+    })
+
+    // onAuthStateChange handles subsequent changes (sign in, sign out, token refresh).
     // IMPORTANT: Do NOT call async supabase methods inside this callback —
     // the auth client locks during the callback, causing deadlocks.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -160,12 +171,15 @@ export function AuthProvider({ children }) {
           setUser(null)
           setProfile(null)
         }
-        initialized.current = true
-        setLoading(false)
+        // If getSession hasn't resolved yet, mark as initialized
+        if (!initialized.current) {
+          initialized.current = true
+          setLoading(false)
+        }
       }
     )
 
-    // Safety timeout — if onAuthStateChange never fires (edge case),
+    // Safety timeout — if nothing fires (edge case),
     // don't leave the user on a loading screen forever
     const timeout = setTimeout(() => {
       if (!initialized.current) {
@@ -178,6 +192,25 @@ export function AuthProvider({ children }) {
       subscription.unsubscribe()
       clearTimeout(timeout)
     }
+  }, [])
+
+  // Refresh session when app comes back to foreground
+  // Covers token expiry while backgrounded (e.g. clicked notification after hours)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && initialized.current) {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user) {
+            setUser(session.user)
+          } else {
+            setUser(null)
+            setProfile(null)
+          }
+        })
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [])
 
   // Fetch profile when user changes — separate from onAuthStateChange

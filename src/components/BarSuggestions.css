@@ -60,15 +60,6 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-.bar-card-featured {
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.25);
-}
-
-.bar-card-featured:hover {
-  background: rgba(34, 197, 94, 0.15);
-}
-
 .bar-card-selected {
   background: rgba(14, 165, 233, 0.1);
   border: 2px solid rgba(14, 165, 233, 0.4);
@@ -214,6 +205,67 @@
 
 .bar-directions:hover {
   opacity: 0.9;
+}
+
+/* ── Cafe variant ── */
+.bar-card-cafe {
+  border-left: 2px solid rgba(217, 119, 6, 0.3);
+}
+
+.bar-card-cafe:hover {
+  background: rgba(217, 119, 6, 0.08);
+}
+
+.bar-rank-cafe {
+  background: linear-gradient(135deg, #d97706 0%, #92400e 100%);
+}
+
+.bar-suggestions-cafe .bar-walk {
+  color: #d97706;
+}
+
+.bar-suggestions-cafe .bar-directions {
+  background: linear-gradient(135deg, #d97706 0%, #92400e 100%);
+}
+
+/* ── Place type toggle ── */
+.place-type-toggle {
+  display: flex;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 0.5rem;
+  padding: 3px;
+  margin-bottom: 0.75rem;
+}
+
+.place-type-btn {
+  flex: 1;
+  padding: 0.4rem 0.75rem;
+  background: none;
+  border: none;
+  border-radius: 0.375rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.place-type-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.place-type-btn.active.type-bar {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+}
+
+.place-type-btn.active.type-cafe {
+  background: linear-gradient(135deg, rgba(217, 119, 6, 0.3), rgba(146, 64, 14, 0.3));
 }
 
 /* Mobile adjustments */

@@ -1,27 +1,32 @@
 import { supabase } from './supabase'
 
 /**
- * Search for nearby bars/venues via Supabase Edge Function
+ * Search for nearby places via Supabase Edge Function
  * (proxies Google Places API to avoid CORS and keep API key server-side)
  * @param {{lat: number, lng: number}} location - Center point for search
  * @param {number} radius - Search radius in meters (default 1500)
+ * @param {string} placeType - Type of place: 'bar' or 'cafe' (default 'bar')
  * @returns {Promise<Array>} Array of place objects
  */
-export async function searchNearbyBars(location, radius = 1500) {
+export async function searchNearbyPlaces(location, radius = 1500, placeType = 'bar') {
   try {
     const { data, error } = await supabase.functions.invoke('nearby-places', {
-      body: { lat: location.lat, lng: location.lng, radius }
+      body: { lat: location.lat, lng: location.lng, radius, placeType }
     })
 
     if (error) throw error
     if (Array.isArray(data) && data.length > 0) return data
 
-    return getMockBars(location)
+    return getMockPlaces(location, placeType)
   } catch (error) {
     console.error('Error fetching places:', error)
-    return getMockBars(location)
+    return getMockPlaces(location, placeType)
   }
 }
+
+// Backwards-compatible alias
+export const searchNearbyBars = (location, radius = 1500) =>
+  searchNearbyPlaces(location, radius, 'bar')
 
 /**
  * Parse Google Places API response into our format
@@ -46,12 +51,52 @@ export function parsePlacesResponse(results) {
 }
 
 /**
- * Get mock bars for development/demo
+ * Get mock places for development/demo
  * @param {{lat: number, lng: number}} location - Center point
- * @returns {Array} Mock bar data
+ * @param {string} placeType - 'bar' or 'cafe'
+ * @returns {Array} Mock place data
  */
-function getMockBars(location) {
+function getMockPlaces(location, placeType = 'bar') {
   const offset = 0.002 // ~200m offset
+
+  if (placeType === 'cafe') {
+    return [
+      {
+        id: 'mock-cafe-1',
+        name: 'Morning Brew',
+        address: '100 Coffee Lane',
+        location: { lat: location.lat + offset, lng: location.lng - offset },
+        rating: 4.6,
+        priceLevel: 1,
+        totalRatings: 210,
+        isOpen: true,
+        placeType: 'cafe'
+      },
+      {
+        id: 'mock-cafe-2',
+        name: 'The Grind',
+        address: '202 Espresso Blvd',
+        location: { lat: location.lat - offset, lng: location.lng + offset },
+        rating: 4.4,
+        priceLevel: 2,
+        totalRatings: 154,
+        isOpen: true,
+        placeType: 'cafe'
+      },
+      {
+        id: 'mock-cafe-3',
+        name: 'Bean & Gone',
+        address: '303 Latte Ave',
+        location: { lat: location.lat + offset, lng: location.lng + offset },
+        rating: 4.8,
+        priceLevel: 2,
+        totalRatings: 312,
+        isOpen: true,
+        placeType: 'cafe'
+      }
+    ]
+  }
+
   return [
     {
       id: 'mock-1',
@@ -61,7 +106,8 @@ function getMockBars(location) {
       rating: 4.5,
       priceLevel: 2,
       totalRatings: 128,
-      isOpen: true
+      isOpen: true,
+      placeType: 'bar'
     },
     {
       id: 'mock-2',
@@ -71,7 +117,8 @@ function getMockBars(location) {
       rating: 4.2,
       priceLevel: 2,
       totalRatings: 89,
-      isOpen: true
+      isOpen: true,
+      placeType: 'bar'
     },
     {
       id: 'mock-3',
@@ -81,7 +128,8 @@ function getMockBars(location) {
       rating: 4.7,
       priceLevel: 3,
       totalRatings: 256,
-      isOpen: true
+      isOpen: true,
+      placeType: 'bar'
     }
   ]
 }

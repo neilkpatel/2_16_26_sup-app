@@ -23,7 +23,7 @@ serve(async (req) => {
   }
 
   try {
-    const { lat, lng, radius = 1500 } = await req.json();
+    const { lat, lng, radius = 1500, placeType = "bar" } = await req.json();
 
     if (!lat || !lng) {
       return new Response(JSON.stringify({ error: "lat and lng required" }), {
@@ -40,23 +40,32 @@ serve(async (req) => {
       });
     }
 
+    // Configure search based on place type
+    const typeConfig: Record<string, { type: string; keyword: string; minRating: number }> = {
+      bar: { type: "bar", keyword: "cocktail bar lounge", minRating: 4.2 },
+      cafe: { type: "cafe", keyword: "coffee shop cafe", minRating: 4.2 },
+    };
+
+    const config = typeConfig[placeType] || typeConfig.bar;
+
     const url = new URL("https://maps.googleapis.com/maps/api/place/nearbysearch/json");
     url.searchParams.set("location", `${lat},${lng}`);
     url.searchParams.set("radius", radius.toString());
-    url.searchParams.set("type", "bar");
-    url.searchParams.set("keyword", "cocktail bar lounge");
+    url.searchParams.set("type", config.type);
+    url.searchParams.set("keyword", config.keyword);
     url.searchParams.set("key", apiKey);
 
     const response = await fetch(url.toString());
     const data = await response.json();
 
-    // Filter: 4.2+ stars, exclude restaurants that aren't primarily bars
     const places = (data.results || [])
       .filter((place: any) => {
-        if ((place.rating || 0) < 4.2) return false;
+        if ((place.rating || 0) < config.minRating) return false;
         const types: string[] = place.types || [];
-        // Exclude places that are restaurants but not bars
-        if (types.includes("restaurant") && !types.includes("bar") && !types.includes("night_club")) return false;
+        if (placeType === "bar") {
+          // Exclude restaurants that aren't primarily bars
+          if (types.includes("restaurant") && !types.includes("bar") && !types.includes("night_club")) return false;
+        }
         return true;
       })
       .map((place: any) => {
@@ -76,31 +85,13 @@ serve(async (req) => {
           isOpen: place.opening_hours?.open_now ?? null,
           distanceMeters: Math.round(meters),
           walkMinutes,
+          placeType,
         };
       })
       .sort((a: any, b: any) => a.distanceMeters - b.distanceMeters)
       .slice(0, 5);
 
-    // Always include The Spaniard as the last result
-    const spaniardDist = distanceMeters(lat, lng, 40.7327497, -74.0021829);
-    const spaniard = {
-      id: "ChIJL0D4jJNZwokRWQTfTBLjlvw",
-      name: "The Spaniard",
-      address: "190 W 4th St, New York",
-      location: { lat: 40.7327497, lng: -74.0021829 },
-      rating: 4.2,
-      priceLevel: 2,
-      totalRatings: 1582,
-      isOpen: null,
-      distanceMeters: Math.round(spaniardDist),
-      walkMinutes: Math.round(spaniardDist / 80),
-    };
-
-    // Remove if it already appeared in results, then add as last
-    const filtered = places.filter((p: any) => p.id !== spaniard.id);
-    const final = [...filtered.slice(0, 5), spaniard];
-
-    return new Response(JSON.stringify(final), {
+    return new Response(JSON.stringify(places), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

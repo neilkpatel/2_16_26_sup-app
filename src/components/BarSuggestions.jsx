@@ -1,32 +1,35 @@
 import { useState, useEffect, useMemo } from 'react'
-import { searchNearbyBars, formatPriceLevel } from '../lib/places'
+import { searchNearbyPlaces, formatPriceLevel } from '../lib/places'
 import './BarSuggestions.css'
 
-export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDestinations = [] }) {
+export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDestinations = [], placeType = 'bar' }) {
   const [bars, setBars] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const isCafe = placeType === 'cafe'
+  const label = isCafe ? 'coffee spot' : 'bar'
+
   useEffect(() => {
-    async function fetchBars() {
+    async function fetchPlaces() {
       if (!location) return
 
       setLoading(true)
       setError('')
 
       try {
-        const results = await searchNearbyBars(location)
+        const results = await searchNearbyPlaces(location, 1500, placeType)
         setBars(results)
       } catch (err) {
-        console.error('Error fetching bars:', err)
-        setError('Could not load bar suggestions')
+        console.error(`Error fetching ${label}s:`, err)
+        setError(`Could not load ${label} suggestions`)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchBars()
-  }, [location?.lat, location?.lng])
+    fetchPlaces()
+  }, [location?.lat, location?.lng, placeType])
 
   // Tag bars that friends are heading to (keep in natural order)
   const displayBars = useMemo(() => {
@@ -75,7 +78,7 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDes
   if (loading) {
     return (
       <div className="bar-suggestions">
-        <h3>Finding nearby spots...</h3>
+        <h3>Finding nearby {isCafe ? 'coffee spots' : 'spots'}...</h3>
         <div className="bars-loading">
           <div className="bar-skeleton"></div>
           <div className="bar-skeleton"></div>
@@ -96,23 +99,23 @@ export function BarSuggestions({ location, selectedBarId, onSelectBar, friendDes
   if (displayBars.length === 0 && bars.length === 0) {
     return (
       <div className="bar-suggestions">
-        <p className="bars-empty">No bars found nearby</p>
+        <p className="bars-empty">No {label}s found nearby</p>
       </div>
     )
   }
 
   return (
-    <div className="bar-suggestions">
-      <h3>Where to meet up?</h3>
+    <div className={`bar-suggestions ${isCafe ? 'bar-suggestions-cafe' : ''}`}>
+      <h3>{isCafe ? 'Where to grab coffee?' : 'Where to meet up?'}</h3>
       <div className="bars-list">
         {displayBars.map((bar, index) => (
           <div
             key={bar.id}
-            className={`bar-card ${bar._pinnedBy ? 'bar-card-pinned' : ''} ${bar.id === 'ChIJL0D4jJNZwokRWQTfTBLjlvw' ? 'bar-card-featured' : ''} ${selectedBarId === bar.id ? 'bar-card-selected' : ''}`}
+            className={`bar-card ${bar._pinnedBy ? 'bar-card-pinned' : ''} ${isCafe ? 'bar-card-cafe' : ''} ${selectedBarId === bar.id ? 'bar-card-selected' : ''}`}
             onClick={() => onSelectBar?.(bar)}
             style={{ cursor: onSelectBar ? 'pointer' : 'default' }}
           >
-            <div className={`bar-rank ${bar._pinnedBy ? 'bar-rank-pinned' : ''}`}>
+            <div className={`bar-rank ${bar._pinnedBy ? 'bar-rank-pinned' : ''} ${isCafe ? 'bar-rank-cafe' : ''}`}>
               {index + 1}
             </div>
             <div className="bar-info">

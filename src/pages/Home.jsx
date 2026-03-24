@@ -73,6 +73,7 @@ export function Home() {
   const [error, setError] = useState('')
   const [timeLeft, setTimeLeft] = useState(null)
   const [selectedBarId, setSelectedBarId] = useState(null)
+  const [placeType, setPlaceType] = useState('bar')
   const [dismissedSessionIds, setDismissedSessionIds] = useState(() => {
     try {
       return JSON.parse(sessionStorage.getItem('dismissed_sups') || '[]')
@@ -468,11 +469,26 @@ export function Home() {
 
             {isSupActive && (midpoint || location) && (
               <div className="suggestions-container">
+                <div className="place-type-toggle">
+                  <button
+                    className={`place-type-btn type-bar ${placeType === 'bar' ? 'active' : ''}`}
+                    onClick={() => { setPlaceType('bar'); setSelectedBarId(null) }}
+                  >
+                    🍸 Bars
+                  </button>
+                  <button
+                    className={`place-type-btn type-cafe ${placeType === 'cafe' ? 'active' : ''}`}
+                    onClick={() => { setPlaceType('cafe'); setSelectedBarId(null) }}
+                  >
+                    ☕ Coffee
+                  </button>
+                </div>
                 <BarSuggestions
                   location={midpoint || location}
                   selectedBarId={selectedBarId}
                   onSelectBar={handleSelectBar}
                   friendDestinations={friendDestinations}
+                  placeType={placeType}
                 />
               </div>
             )}

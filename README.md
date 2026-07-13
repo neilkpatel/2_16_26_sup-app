@@ -1,16 +1,21 @@
-# React + Vite
+# Sup
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A "who's free to hang" progressive web app. Broadcast to your squad in one tap, see everyone on a live map, and get a fair meeting spot plus bar suggestions near the group.
 
-Currently, two official plugins are available:
+**Live demo:** https://sup-app-jet.vercel.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## What it does
 
-## React Compiler
+- One-tap broadcasting to your squad with web push notifications
+- Real-time map that updates over WebSockets, with a polling fallback for reliability
+- Calculates the geographic midpoint between all active users and suggests bars nearby
+- PostGIS-backed location queries for distance and geometry
+- Row-level security so users only ever see their own squad's data
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Built with
 
-## Expanding the ESLint configuration
+React, Supabase, PostGIS, Web Push, PWA, Leaflet
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+Built by [Neil Patel](https://neilkpatel.com). More projects at [neilkpatel.com](https://neilkpatel.com).

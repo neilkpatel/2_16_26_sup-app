@@ -48,7 +48,8 @@ export function AddFriend() {
           {
             headers: {
               'apikey': supabaseKey,
-              'Accept': 'application/json'
+              'Accept': 'application/json',
+              'Accept-Profile': 'sup'
             }
           }
         )

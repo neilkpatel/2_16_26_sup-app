@@ -130,7 +130,7 @@ export function useReactions(userId, sessionIds = []) {
         'postgres_changes',
         {
           event: '*',
-          schema: 'public',
+          schema: 'sup',
           table: 'sup_reactions'
         },
         (payload) => {

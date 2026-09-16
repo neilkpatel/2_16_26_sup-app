@@ -65,6 +65,26 @@ describe('Push Notifications', () => {
   })
 })
 
+describe('Shared project isolation', () => {
+  // Sup shares a Supabase project with other apps, so every read must target the sup schema
+  it('client, realtime and raw REST calls all target the sup schema', () => {
+    expect(read('src/lib/supabase.js')).toContain("SUP_SCHEMA = 'sup'")
+    expect(read('src/pages/AddFriend.jsx')).toContain("'Accept-Profile': 'sup'")
+    for (const f of ['src/hooks/useFriends.js', 'src/hooks/useReactions.js', 'src/hooks/useSupStatus.js']) {
+      const content = read(f)
+      expect(content).toContain("schema: 'sup'")
+      expect(content).not.toContain("schema: 'public'")
+    }
+  })
+
+  it('schema.sql never touches auth users or public tables', () => {
+    const content = read('supabase/schema.sql')
+    expect(content).not.toMatch(/^\s*delete from auth\.users/m)
+    expect(content).not.toMatch(/^\s*drop /m)
+    expect(content).not.toMatch(/^\s*create table public\./m)
+  })
+})
+
 describe('Database Schema', () => {
   it('includes push_subscriptions table with RLS', () => {
     const content = read('supabase/schema.sql')
@@ -78,8 +98,9 @@ describe('Database Schema', () => {
 })
 
 describe('Edge Function', () => {
-  it('send-push has correct structure', () => {
-    const content = read('supabase/functions/send-push/index.ts')
+  it('sup-send-push has correct structure', () => {
+    const content = read('supabase/functions/sup-send-push/index.ts')
+    expect(content).toContain('schema: "sup"')
     expect(content).toContain('Access-Control-Allow-Origin')
     expect(content).toContain('userId')
     expect(content).toContain('.from("users")')

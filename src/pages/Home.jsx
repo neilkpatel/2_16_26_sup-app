@@ -161,7 +161,7 @@ export function Home() {
       setDestination(bar)
 
       // Notify active squad members about bar choice
-      supabase.functions.invoke('send-push', {
+      supabase.functions.invoke('sup-send-push', {
         body: {
           userId: user.id,
           message: `${profile?.username} is heading to ${bar.name}`,
@@ -186,7 +186,7 @@ export function Home() {
       }
 
       // Fire-and-forget: notify squad via edge function
-      supabase.functions.invoke('send-push', {
+      supabase.functions.invoke('sup-send-push', {
         body: { userId: user.id }
       })
 
@@ -224,7 +224,7 @@ export function Home() {
     sessionStorage.setItem('dismissed_sups', JSON.stringify(updated))
 
     // Notify active friends that we can't make it
-    supabase.functions.invoke('send-push', {
+    supabase.functions.invoke('sup-send-push', {
       body: {
         userId: user.id,
         message: `${profile?.username} can't make it right now`,

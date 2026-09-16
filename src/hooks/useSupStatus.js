@@ -275,7 +275,7 @@ export function useSupStatus(userId, friendIds = [], supDuration = DEFAULT_SUP_D
         'postgres_changes',
         {
           event: '*',
-          schema: 'public',
+          schema: 'sup',
           table: 'sup_sessions'
         },
         (payload) => {

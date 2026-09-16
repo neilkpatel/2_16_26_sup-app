@@ -28,15 +28,41 @@ A "who's free to hang" app. You tap **Sup**, your entire **squad** gets a push n
 - **Mutual** — when someone clicks your link, both of you are in each other's squads
 - **No approval step** — clicking the link is the approval
 
+## Backend (moved 9/15/26 — read this before touching the database)
+Sup runs in the **shared** Supabase project `hufgsqlyaolefwhtvbub` (named "worldcup-picks"),
+which also backs SHRED, tab-split, agentpays, concert radar and july4 plans. The original
+sup-app project (`zksbfcbezexsqrxwjjgt`) is paused behind the free tier's 2-active-project cap
+and is not coming back; treat it as gone.
+
+Sup's tables live in their own **`sup` schema**, so nothing can collide with the other apps:
+- The client sets `db: { schema: 'sup' }` (`src/lib/supabase.js`), realtime subscriptions pass
+  `schema: 'sup'`, and the one raw REST call (`src/pages/AddFriend.jsx`) sends `Accept-Profile: sup`.
+- Edge functions are prefixed: `sup-send-push`, `sup-nearby-places`.
+- **Never drop, delete or alter anything outside the `sup` schema**, and never
+  `delete from auth.users` — auth is project-wide.
+- `scripts/move-to-shared-project.sh` re-applies the whole backend setup and is safe to re-run.
+  `node scripts/smoke.mjs` runs 26 live checks (signup → squad → Sup → realtime → push →
+  places) using throwaway users; the script deletes them afterwards.
+- Credentials live outside this public repo: `~/.config/supabase/access_token`,
+  `~/.config/sup-app/vapid.json`, `~/.config/whatagentsbuy/vercel_token`.
+- Realtime sleeps while the project is idle and needs a few seconds to start listening after a
+  cold start. The hooks poll every 5s as a fallback, so a missed event self-corrects.
+
 ## Supabase Tables
-- `users` — id, username, phone
+All in the `sup` schema:
+- `users` — id, username, phone, sup_duration (default 15 min)
 - `friendships` — id, user_id, friend_id, created_at (bidirectional)
 - `sup_sessions` — id, user_id, location (PostGIS POINT), started_at, expires_at (2hr duration)
 - `push_subscriptions` — id, user_id, subscription (jsonb), created_at
+- `notifications` — id, user_id (recipient), from_user_id, message, created_at (written by the push function, read by History + RecentActivity)
 
 ## Edge Functions
-- `send-push` — sends web push to all squad members when someone goes Sup
-- `nearby-places` — proxies Google Places API, filters to 4.2+ star bars
+- `sup-send-push` — sends web push to all squad members when someone goes Sup
+- `sup-nearby-places` — proxies Google Places API, filters to 4.2+ star bars
+
+**Known issue:** `sup-send-push` runs without JWT verification and trusts the `userId` in the
+request body, so anyone who knows the URL can push to any squad. Worth fixing before real
+friends use it.
 
 ## Design System
 - Primary gradient: `#667eea` → `#764ba2` (purple-indigo)
@@ -46,7 +72,11 @@ A "who's free to hang" app. You tap **Sup**, your entire **squad** gets a push n
 
 ## Current State
 - All features implemented: auth, squad (link-only), Sup button, map, push notifications, bar suggestions, PWA
-- 44 tests passing (vitest)
+- 104 tests passing (vitest); 7 fail and were already failing before 9/15/26 — they assert an
+  older reactions UI that commit cf41c54 replaced with the single "Not now" button
 - Deployed to Vercel: https://sup-app-jet.vercel.app
-- GitHub: https://github.com/neilkpatel/2_16_26_sup-app (private)
-- Phone testing phase — testing on two iPhones next
+- GitHub: https://github.com/neilkpatel/2_16_26_sup-app (public as of 9/15/26)
+- **9/15/26: backend moved to the shared project and verified live end to end. Accounts start
+  fresh — the old `neilkpatel` / `test` users were in the paused project.**
+- Phone testing phase — never finished. Next real step is two iPhones: install to home screen
+  (iOS only delivers push to an installed PWA), allow notifications and location, then Sup.

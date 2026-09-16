@@ -10,7 +10,7 @@ import { supabase } from './supabase'
  */
 export async function searchNearbyPlaces(location, radius = 1500, placeType = 'bar') {
   try {
-    const { data, error } = await supabase.functions.invoke('nearby-places', {
+    const { data, error } = await supabase.functions.invoke('sup-nearby-places', {
       body: { lat: location.lat, lng: location.lng, radius, placeType }
     })
 

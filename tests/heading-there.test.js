@@ -12,7 +12,7 @@ describe('Heading There — Schema', () => {
 
   it('sup_sessions has destination_location column', () => {
     const schema = read('supabase/schema.sql')
-    expect(schema).toContain('destination_location geography(point, 4326)')
+    expect(schema).toContain('destination_location extensions.geography(point, 4326)')
   })
 })
 

@@ -7,16 +7,16 @@ const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf-8')
 describe('Reactions — Schema', () => {
   it('sup_reactions table exists with correct columns', () => {
     const schema = read('supabase/schema.sql')
-    expect(schema).toContain('create table public.sup_reactions')
-    expect(schema).toContain('session_id uuid references public.sup_sessions(id)')
-    expect(schema).toContain('user_id uuid references public.users(id)')
+    expect(schema).toContain('create table sup.sup_reactions')
+    expect(schema).toContain('session_id uuid references sup.sup_sessions(id)')
+    expect(schema).toContain('user_id uuid references sup.users(id)')
     expect(schema).toContain("reaction text not null check (reaction in ('im_in', 'cant_tonight', 'maybe_later'))")
     expect(schema).toContain('constraint unique_reaction unique (session_id, user_id)')
   })
 
   it('sup_reactions has RLS enabled', () => {
     const schema = read('supabase/schema.sql')
-    expect(schema).toContain('alter table public.sup_reactions enable row level security')
+    expect(schema).toContain('alter table sup.sup_reactions enable row level security')
   })
 
   it('sup_reactions has proper RLS policies', () => {
@@ -37,17 +37,17 @@ describe('Reactions — Schema', () => {
 
   it('sup_reactions granted to authenticated', () => {
     const schema = read('supabase/schema.sql')
-    expect(schema).toContain('grant all on public.sup_reactions to authenticated')
+    expect(schema).toContain('grant select, insert, update, delete on all tables in schema sup to authenticated')
   })
 
   it('sup_reactions has realtime enabled', () => {
     const schema = read('supabase/schema.sql')
-    expect(schema).toContain('alter publication supabase_realtime add table public.sup_reactions')
+    expect(schema).toContain('alter publication supabase_realtime add table sup.sup_reactions')
   })
 
   it('sup_reactions cascades on session delete', () => {
     const schema = read('supabase/schema.sql')
-    expect(schema).toMatch(/session_id uuid references public\.sup_sessions\(id\) on delete cascade/)
+    expect(schema).toMatch(/session_id uuid references sup\.sup_sessions\(id\) on delete cascade/)
   })
 })
 

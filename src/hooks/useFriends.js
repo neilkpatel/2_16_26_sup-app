@@ -140,7 +140,7 @@ export function useFriends(userId) {
         'postgres_changes',
         {
           event: '*',
-          schema: 'public',
+          schema: 'sup',
           table: 'friendships',
           filter: `user_id=eq.${userId}`
         },
@@ -150,7 +150,7 @@ export function useFriends(userId) {
         'postgres_changes',
         {
           event: '*',
-          schema: 'public',
+          schema: 'sup',
           table: 'friendships',
           filter: `friend_id=eq.${userId}`
         },
